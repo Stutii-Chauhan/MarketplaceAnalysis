@@ -145,18 +145,25 @@ brand_map = {
     "gc": "GC"
 }
 
+# Lowercase version of product names for pattern matching
 df["__product_lower__"] = df["product_name"].str.lower()
-df["__brand_match__"] = np.nan
 
+# Temporary brand match column (explicitly set as object type to store strings)
+df["__brand_match__"] = pd.Series([np.nan] * len(df), dtype="object")
+
+# Match brand keywords to update missing brand values
 for keyword, clean_brand in brand_map.items():
     pattern = rf"\b{re.escape(keyword)}\b"
-    mask = df["brand"].isna() & df["__product_lower__"].str.contains(pattern, regex=True)
+    mask = df["brand"].isna() & df["__product_lower__"].str.contains(pattern, regex=True, na=False)
     df.loc[mask, "__brand_match__"] = clean_brand
 
+# Fill missing brand values with matched brands
 df["brand"] = df["brand"].fillna(df["__brand_match__"])
 
+# Still missing? Mark as "NA"
 df["brand"] = df["brand"].fillna("NA")
 
+# Drop helper columns
 df.drop(columns=["__product_lower__", "__brand_match__"], inplace=True)
 
 
