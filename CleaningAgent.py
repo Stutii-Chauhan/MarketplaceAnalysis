@@ -6,9 +6,9 @@ import re
 import numpy as np
 from datetime import datetime
 
-# --------------------------------------
+# -------------------------------------
 # DB Setup
-# --------------------------------------
+# -------------------------------------
 db = os.environ["SUPABASE_DB"]
 user = os.environ["SUPABASE_USER"]
 raw_password = os.environ["SUPABASE_PASSWORD"]
