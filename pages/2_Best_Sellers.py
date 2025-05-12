@@ -14,7 +14,7 @@ engine = create_engine(f"postgresql://{USER}:{PASSWORD}@{HOST}:{PORT}/{DB}")
 @st.cache_data(ttl=600)
 def load_data(table_name):
     df = pd.read_sql_table(table_name, con=engine)
-    df["price"] = pd.to_numeric(df["price"].str.replace(",", "").fillna("0"), errors="coerce").astype(int)
+    df["price"] = pd.to_numeric(df["price"].str.replace(",", "").fillna("0"), errors="coerce").astype("Int64")
     return df
 
 def render_best_sellers(gender):
