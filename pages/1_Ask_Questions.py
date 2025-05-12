@@ -163,40 +163,37 @@ with col2:
 st.markdown("---")
 st.subheader("💬 Chat with Marketplace Analyzer")
 
-user_input = st.text_input("Ask a question about your data")
-
 if user_input:
     st.session_state.chat_history.append({"role": "user", "content": user_input})
+    
     with st.spinner("Buzz is thinking..."):
-        sql_query = generate_sql_with_context(st.session_state.chat_history)
-        st.session_state.chat_history.append({"role": "assistant", "content": sql_query})
-        st.session_state.last_sql = sql_query
-
-        # ✅ Auto-run the SQL
         try:
+            sql_query = generate_sql_with_context(st.session_state.chat_history)
+            st.session_state.chat_history.append({"role": "assistant", "content": sql_query})
+            st.session_state.last_sql = sql_query
+
+            # ✅ Run the query immediately
             df_result = pd.read_sql_query(sql_query, engine)
             st.session_state.query_result = df_result
 
-            # ✅ Optional: detect and store the used table
+            # ✅ Track which table was used (optional)
             for table in TABLE_SCHEMAS:
                 if table.lower() in sql_query.lower():
                     st.session_state.last_table = table
                     break
-        except Exception as e:
-            st.error(f"❌ Query execution failed: {e}")
-        
 
-        try:
-            df_result = pd.read_sql_query(sql_query, engine)
-            st.session_state.query_result = df_result
+            # ✅ Show preview immediately
+            st.markdown("### 📋 Query Output")
+            if len(df_result) == 0:
+                st.info("No results found.")
+            elif df_result.shape[1] == 1:
+                st.success(f"✅ Result: `{df_result.iloc[0,0]}`")
+            else:
+                st.dataframe(df_result.head())
 
-            # Try to extract table name from SQL (best effort)
-            for table in TABLE_SCHEMAS.keys():
-                if table.lower() in sql_query.lower():
-                    st.session_state.last_table = table
-                    break
         except Exception as e:
-            st.error(f"Error executing query: {e}")
+            st.error(f"❌ Failed to execute query: {e}")
+
 
 # st.markdown("### 🧠 Chat History")
 chat_container = st.container()
