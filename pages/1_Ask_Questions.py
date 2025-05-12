@@ -163,6 +163,8 @@ with col2:
 st.markdown("---")
 st.subheader("💬 Chat with Marketplace Analyzer")
 
+user_input = st.text_input("Ask a question about your data")
+
 if user_input:
     st.session_state.chat_history.append({"role": "user", "content": user_input})
     
