@@ -154,7 +154,6 @@ def render_best_sellers(gender):
                             )
             st.markdown("<div style='height: 30px;'></div>", unsafe_allow_html=True)
 
-
         # --- Pagination Controls ---
         st.markdown("<br>", unsafe_allow_html=True)
         col1, col2, col3 = st.columns([1, 8, 1])
