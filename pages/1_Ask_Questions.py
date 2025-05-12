@@ -51,8 +51,8 @@ def generate_sql_with_context(chat_history):
     context = "\n".join([f"{msg['role']}: {msg['content']}" for msg in chat_history])
     table_guidance = """
 Use these rules to choose the correct table:
-- Use `scraped_data_cleaned` for all general queries across genders, brands, discounts, etc.
-- Use `final_watch_dataset_men_output_rows` for men-specific feature/price queries.
+- Use `scraped_data_cleaned` for all queries unless best sellers are mentioned explicitly.
+- Use `final_watch_dataset_men_output_rows` 
 - Use `final_watch_dataset_women_output_rows` for women-specific ones.
 - Reuse previous context if question is a follow-up.
 """
