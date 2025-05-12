@@ -172,6 +172,7 @@ if user_input:
     with st.spinner("Buzz is thinking..."):
         try:
             sql_query = generate_sql_with_context(st.session_state.chat_history)
+            sql_query = sql_query.replace("–", "-").replace("‘", "'").replace("’", "'").replace("“", '"').replace("”", '"')
             st.session_state.chat_history.append({"role": "assistant", "content": sql_query})
             st.session_state.last_sql = sql_query
 
