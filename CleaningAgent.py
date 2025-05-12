@@ -22,44 +22,44 @@ engine = create_engine(f"postgresql://{user}:{password}@{host}:{port}/{db}")
 df = pd.read_sql_table("final_watch_data_cleaned", con=engine)
 df.count()
 
-#delete rows with NaN/blank in URL column and also in the Price Column.
-df = df.dropna(subset=["URL"])
-df = df.dropna(subset=["Price"])
+#delete rows with NaN/blank in url column and also in the price Column.
+df = df.dropna(subset=["url"])
+df = df.dropna(subset=["price"])
 df.count()
 
-#delete duplicate values with Product Name + Model Number
-df = df.drop_duplicates(subset=["Product Name", "Model Number"], keep="first")
+#delete duplicate values with product name + Model Number
+df = df.drop_duplicates(subset=["product name", "Model Number"], keep="first")
 df.count()
 
 #price cleaning
-df["Price"] = (
-    df["Price"]
+df["price"] = (
+    df["price"]
     .str.replace(",", "")                   # Remove commas
     .str.replace(r"\.$", "", regex=True)   # Remove trailing dot if exists
     .astype(float)
     .round(2)
 )
-df = df[df["Price"] >= 10000] #removing products with price < 10000
+df = df[df["price"] >= 10000] #removing products with price < 10000
 df.count()
 
 #cleaning ratings
-df["Rating(out of 5)"] = (
-    df["Rating(out of 5)"]
+df["rating(out of 5)"] = (
+    df["rating(out of 5)"]
     .str.extract(r"(\d+\.?\d*)")        # extract only the numeric part
     .astype(float)
     .map(lambda x: int(x) if pd.notna(x) and x.is_integer() else round(x, 1) if pd.notna(x) else np.nan)
 )
 
 #adding price band
-df["Price Band"] = pd.cut(
-    df["Price"],
+df["price band"] = pd.cut(
+    df["price"],
     bins=[0, 10000, 15000, 25000, 40000, float("inf")],
     labels=["<10K", "10K-15K", "15K-25K", "25K-40K", "40K+"],
     right=False
 )
 
-df["Discount (%)"] = (
-    df["Discount (%)"]
+df["discount (%)"] = (
+    df["discount (%)"]
     .astype(str)
     .str.extract(r"(\d+\.?\d*)")[0]         # extract numeric part
     .replace("", np.nan)
@@ -83,13 +83,13 @@ def normalize_to_mm(value):
 
     return f"{int(num)} Millimeters" if num.is_integer() else f"{num} Millimeters"
 
-df["Band Width"] = df["Band Width"].apply(normalize_to_mm)
-df["Case Diameter"] = df["Case Diameter"].apply(normalize_to_mm)
-df["Case Thickness"] = df["Case Thickness"].apply(normalize_to_mm)
+df["band width"] = df["band width"].apply(normalize_to_mm)
+df["case diameter"] = df["case diameter"].apply(normalize_to_mm)
+df["case thickness"] = df["case thickness"].apply(normalize_to_mm)
 
 #removing the unwanted keywords
 unwanted_keywords = ["pocket watch", "repair tool", "watch bezel", "watch band", "tool", "watch winder", "watch case"]
-df = df[~df["Product Name"].str.lower().str.contains('|'.join(unwanted_keywords))]
+df = df[~df["product name"].str.lower().str.contains('|'.join(unwanted_keywords))]
 df.count()
 
 
@@ -151,25 +151,25 @@ brand_map = {
     "gc": "GC"
 }
 
-df["__product_lower__"] = df["Product Name"].str.lower()
+df["__product_lower__"] = df["product name"].str.lower()
 df["__brand_match__"] = np.nan
 
 for keyword, clean_brand in brand_map.items():
     pattern = rf"\b{re.escape(keyword)}\b"
-    mask = df["Brand"].isna() & df["__product_lower__"].str.contains(pattern, regex=True)
+    mask = df["brand"].isna() & df["__product_lower__"].str.contains(pattern, regex=True)
     df.loc[mask, "__brand_match__"] = clean_brand
 
-df["Brand"] = df["Brand"].fillna(df["__brand_match__"])
+df["brand"] = df["brand"].fillna(df["__brand_match__"])
 
-df["Brand"] = df["Brand"].fillna("NA")
+df["brand"] = df["brand"].fillna("NA")
 
 df.drop(columns=["__product_lower__", "__brand_match__"], inplace=True)
 
 
 #Dividing Titan as Titan, Xylys, Edge and Raga
 def categorize_titan(row):
-    brand = str(row["Brand"]).strip().title()
-    product = str(row["Product Name"]).strip().title()
+    brand = str(row["brand"]).strip().title()
+    product = str(row["product name"]).strip().title()
 
     if brand == "Titan":
         if "Xylys" in product:
@@ -182,7 +182,7 @@ def categorize_titan(row):
             return "Titan"
     return brand
 
-df["Brand"] = df.apply(categorize_titan, axis=1)
+df["brand"] = df.apply(categorize_titan, axis=1)
 
 #Adding a gender column
 def infer_gender(product_name):
@@ -196,9 +196,9 @@ def infer_gender(product_name):
         return "Men"
     else:
         return "Unisex"
-df["Gender"] = df["Product Name"].apply(infer_gender)
+df["gender"] = df["product name"].apply(infer_gender)
 
 #adding as of date
-df["As of Date"] = datetime.today().strftime("%Y-%m-%d")
+df["as of date"] = datetime.today().strftime("%Y-%m-%d")
 
 df.to_sql("scraped_data_cleaned", con=engine, if_exists="replace", index=False)
