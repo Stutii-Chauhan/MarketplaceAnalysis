@@ -127,16 +127,16 @@ def render_best_sellers(gender):
                                                 overflow: hidden;
                                                 text-align:center;
                                                 height:3em;">
-                                        {row['Product Name']}
+                                        {row['product_name']}
                                     </div>
                                     <div style="font-size:0.95rem; line-height:1.6; text-align:left;">
-                                        <b>Brand:</b> {row['Brand']}<br>
-                                        <b>Model:</b> {row['Model Number']}<br>
+                                        <b>Brand:</b> {row['brand']}<br>
+                                        <b>Model:</b> {row['model_number']}<br>
                                         <b>price:</b> ₹{int(row['price'])}<br>
-                                        <b>Rating:</b> {round(row['Ratings'], 1) if pd.notna(row['Ratings']) else "N/A"}/5<br>
+                                        <b>Rating:</b> {round(row['ratings'], 1) if pd.notna(row['ratings']) else "N/A"}/5<br>
                                         <b>Discount:</b> {
-                                            "No" if pd.notna(row["Discount"]) and row["Discount"] in ["0", "0.0"]
-                                            else row["Discount"] if pd.notna(row["Discount"])
+                                            "No" if pd.notna(row["discount"]) and row["discount"] in ["0", "0.0"]
+                                            else row["discount"] if pd.notna(row["discount"])
                                             else "N/A"
                                 }
                                     </div>
