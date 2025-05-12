@@ -4,7 +4,8 @@ on:
   push:
     paths:
       - "CleaningAgent.py"
-      - "**/*"  # catch-all for added/modified/removed files
+      - "**/*.csv"
+      - "**/*.xlsx"
 
   workflow_run:
     workflows: ["Upload to Supabase"]
