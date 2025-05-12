@@ -26,7 +26,7 @@ TABLE_SCHEMAS = {
         "file", "url", "brand", "product_name", "model_number", "model_year", "price",
         "rating(out_of_5)", "discount_(%)", "band_colour", "band_material", "band_width",
         "case_diameter", "case_material", "case_thickness", "dial_colour", "crystal_material",
-        "case_shape", "movement", "water_resistance_de...", "special_features", "image",
+        "case_shape", "movement", "water_resistance_depth", "special_features", "image",
         "imageurl", "price_band", "gender", "as_of_date"
     ],
     "final_watch_dataset_women_output_rows": [
@@ -50,11 +50,49 @@ def generate_schema_prompt():
 def generate_sql_with_context(chat_history):
     context = "\n".join([f"{msg['role']}: {msg['content']}" for msg in chat_history])
     table_guidance = """
-Use these rules to choose the correct table:
-- Use `scraped_data_cleaned` for all queries unless best sellers are mentioned explicitly.
-- Use `final_watch_dataset_men_output_rows` 
-- Use `final_watch_dataset_women_output_rows` for women-specific ones.
-- Reuse previous context if question is a follow-up.
+Use these rules to choose the correct table and columns:
+
+scraped_data_cleaned Table Overview:
+This is the master table with full product listings. Column descriptions:
+- "brand" — the brand of the watch
+- "product_name" — product's unique name
+- "model_number" — model ID
+- "model_year" — year the watch was launched on Amazon
+- "price" — selling price
+- "rating(out_of_5)" — customer rating out of 5
+- "discount_(%)" — discount percentage
+- "band_colour" — color of the strap/band
+- "band_material" — material of the strap (e.g., Leather, Stainless Steel, Rubber)
+- "band_width" — width of the band in mm
+- "case_diameter" — diameter of the watch case in mm
+- "case_material" — material of the case (e.g., Stainless Steel, Brass)
+- "case_thickness" — thickness of the case in mm
+- "dial_colour" — dial color
+- "crystal_material" — material of the crystal (e.g., Mineral, Sapphire)
+- "case_shape" — shape of the case
+- "movement" — watch movement type (e.g., Quartz, Automatic)
+- "water_resistance_depth" — water resistance in meters
+- "special_features" — extra features
+- "image", "imageurl" — product images
+- "price_band" — price bucket (e.g., 10K–15K, 25K–40K, etc.)
+- "gender" — target audience (Men, Women, Unisex, Couple)
+- "as_of_date" — when the data was last loaded
+
+Table Selection Rules:
+- Use `scraped_data_cleaned` for all general queries unless best sellers are explicitly mentioned.
+- Use `final_watch_dataset_men_output_rows` if the question refers to best sellers for men.
+- Use `final_watch_dataset_women_output_rows` if the question refers to best sellers for women.
+- Both best seller tables have the **same structure and column definitions** as `scraped_data_cleaned`, so use the same schema description when writing queries for them.
+
+Material-related Column Disambiguation:
+If the user's query contains materials (e.g., "stainless steel", "leather", "rubber"), choose the appropriate column:
+- Use `band_material` if the question includes terms like "strap", "band", or "bracelet"
+- Use `case_material` if it includes "case", "body", or "watch material"
+- Use `crystal_material` if it includes "crystal", "glass", "sapphire", or "mineral"
+- If no body part is specified, default to `case_material`
+
+Follow-Up Handling:
+- For follow-up questions, retain previously used filters or table if the user does not explicitly change them.
 """
 
     prompt = f"""
