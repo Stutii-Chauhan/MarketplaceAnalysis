@@ -85,6 +85,7 @@ Price Range logic:
 - Match `price_band` = '25K–40K' for 25000–40000
 - Match `price_band` = '40K+' for 40000 and above
 - Do not use numeric BETWEEN for price when price_band exists
+- "-" in  "10k–15k", "15k–25k", "25k–40k" is hyphen and not dash
 
 
 Table Selection Rules:
