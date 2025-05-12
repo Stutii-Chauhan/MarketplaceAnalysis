@@ -116,8 +116,8 @@ def render_best_sellers(gender):
                                             background-color:white; display:flex; flex-direction:column;
                                             justify-content:space-between; width:100%;">
                                     <div style='text-align:center'>
-                                        <a href="{row['URL']}" target="_blank">
-                                            <img src="{row['ImageURL']}" style="height:240px; object-fit:contain; margin:auto; margin-bottom:15px;" />
+                                        <a href="{row['url']}" target="_blank">
+                                            <img src="{row['imageurl']}" style="height:240px; object-fit:contain; margin:auto; margin-bottom:15px;" />
                                         </a>
                                     </div>
                                     <div style="font-weight:600; font-size:1rem; margin-bottom:10px;
