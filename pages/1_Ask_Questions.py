@@ -78,6 +78,15 @@ This is the master table with full product listings. Column descriptions:
 - "gender" — target audience (Men, Women, Unisex, Couple)
 - "as_of_date" — when the data was last loaded
 
+Price Range logic:
+- If the user's question includes price bands like "10k–15k", "15k–25k", "25k–40k", or "40k+", refer to the `price_band` column instead of using numeric price ranges.
+- Match `price_band` = '10K–15K' for 10000–15000
+- Match `price_band` = '15K–25K' for 15000–25000
+- Match `price_band` = '25K–40K' for 25000–40000
+- Match `price_band` = '40K+' for 40000 and above
+- Do not use numeric BETWEEN for price when price_band exists
+
+
 Table Selection Rules:
 - Use `scraped_data_cleaned` for all general queries unless best sellers are explicitly mentioned.
 - Use `final_watch_dataset_men_output_rows` if the question refers to best sellers for men.
