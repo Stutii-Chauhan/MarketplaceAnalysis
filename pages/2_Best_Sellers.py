@@ -85,7 +85,10 @@ def render_best_sellers(gender):
     if selected_movement:
         filtered_df = filtered_df[filtered_df["movement"].isin(selected_movement)]
 
-# Pagination
+    # --- Drop rows with missing critical fields before pagination ---
+    filtered_df = filtered_df.dropna(subset=["product_name", "url", "imageurl", "price"], how="any")
+    
+    # --- Pagination Setup ---
     items_per_page = 20
     total_items = len(filtered_df)
     total_pages = (total_items - 1) // items_per_page + 1
@@ -108,6 +111,11 @@ def render_best_sellers(gender):
                 for j in range(4):
                     if i + j < len(rows):
                         _, row = rows[i + j]
+    
+                        # Skip any row with essential nulls (safety check)
+                        if pd.isna(row["product_name"]) or pd.isna(row["url"]) or pd.isna(row["imageurl"]) or pd.isna(row["price"]):
+                            continue
+    
                         with cols[j]:
                             st.markdown(
                                 f"""
@@ -130,23 +138,21 @@ def render_best_sellers(gender):
                                         {row['product_name']}
                                     </div>
                                     <div style="font-size:0.95rem; line-height:1.6; text-align:left;">
-                                        <b>Brand:</b> {row['brand']}<br>
-                                        <b>Model:</b> {row['model_number']}<br>
-                                        <b>price:</b> ₹{int(row['price'])}<br>
+                                        <b>Brand:</b> {row.get('brand', 'N/A')}<br>
+                                        <b>Model:</b> {row.get('model_number', 'N/A')}<br>
+                                        <b>Price:</b> ₹{int(row['price'])}<br>
                                         <b>Rating:</b> {round(row['ratings'], 1) if pd.notna(row['ratings']) else "N/A"}/5<br>
                                         <b>Discount:</b> {
                                             "No" if pd.notna(row["discount"]) and row["discount"] in ["0", "0.0"]
                                             else row["discount"] if pd.notna(row["discount"])
                                             else "N/A"
-                                }
+                                        }
                                     </div>
                                 </div>
                                 """,
                                 unsafe_allow_html=True
                             )
             st.markdown("<div style='height: 30px;'></div>", unsafe_allow_html=True)
-
-
 
 
         # --- Pagination Controls ---
