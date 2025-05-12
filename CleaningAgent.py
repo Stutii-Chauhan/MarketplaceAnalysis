@@ -27,8 +27,8 @@ df = df.dropna(subset=["url"])
 df = df.dropna(subset=["price"])
 df.count()
 
-#delete duplicate values with product name + Model Number
-df = df.drop_duplicates(subset=["product name", "Model Number"], keep="first")
+#delete duplicate values with product name + model number
+df = df.drop_duplicates(subset=["product name", "model number"], keep="first")
 df.count()
 
 #price cleaning
