@@ -26,7 +26,7 @@ for file in os.listdir("."):
             if file.endswith(".xlsx"):
                 df = pd.read_excel(file)
             else:
-                df = pd.read_csv(file, encoding="ISO-8859-1")  # ✅ safer for non-UTF-8 content
+                df = pd.read_csv(file, encoding="ISO-8859-1")  # safer for non-UTF-8 content
 
             df.columns = df.columns.str.strip().str.lower().str.replace(" ", "_")
             table_name = file.lower().replace(".xlsx", "").replace(".csv", "").replace(" ", "_")
