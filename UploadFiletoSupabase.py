@@ -9,7 +9,7 @@ raw_password = os.environ["SUPABASE_PASSWORD"]
 host = os.environ["SUPABASE_HOST"]
 port = os.environ["SUPABASE_PORT"]
 
-# ✅ Encode password for special characters like @, !, etc.
+# Encode password for special characters like @, !, etc.
 password = quote_plus(raw_password)
 
 print("🔍 DEBUGGING ENVIRONMENT VARIABLES")
