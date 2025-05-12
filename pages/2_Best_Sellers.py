@@ -14,7 +14,7 @@ engine = create_engine(f"postgresql://{USER}:{PASSWORD}@{HOST}:{PORT}/{DB}")
 @st.cache_data(ttl=600)
 def load_data(table_name):
     df = pd.read_sql_table(table_name, con=engine)
-    df["Price"] = pd.to_numeric(df["Price"].str.replace(",", "").fillna("0"), errors="coerce").astype(int)
+    df["Price"] = pd.to_numeric(df["price"].str.replace(",", "").fillna("0"), errors="coerce").astype(int)
     return df
 
 def render_best_sellers(gender):
@@ -37,32 +37,32 @@ def render_best_sellers(gender):
             selected_priceband.append(band)
 
     # 2. Price Range Slider
-    price_min, price_max = int(df["Price"].min()), int(df["Price"].max())
+    price_min, price_max = int(df["price"].min()), int(df["price"].max())
     selected_price = st.sidebar.slider("Price Range", price_min, price_max, (price_min, price_max))
 
     # 3. Brand
-    df["Brand"] = df["Brand"].str.strip().str.lower().str.title()
-    selected_brands = st.sidebar.multiselect("Brand", sorted(df["Brand"].dropna().unique()))
+    df["brand"] = df["brand"].str.strip().str.lower().str.title()
+    selected_brands = st.sidebar.multiselect("Brand", sorted(df["brand"].dropna().unique()))
 
     # 4. Dial Colour
-    df["Dial Colour"] = df["Dial Colour"].str.strip().str.lower().str.title()
-    selected_dialcol = st.sidebar.multiselect("Dial Colour", sorted(df["Dial Colour"].dropna().unique()))
+    df["dial colour"] = df["dial colour"].str.strip().str.lower().str.title()
+    selected_dialcol = st.sidebar.multiselect("Dial Colour", sorted(df["dial colour"].dropna().unique()))
 
     # 5. Dial Shape
-    df["Case Shape"] = df["Case Shape"].str.strip().str.lower().str.title()
-    selected_dialshape = st.sidebar.multiselect("Dial Shape", sorted(df["Case Shape"].dropna().unique()))
+    df["case shape"] = df["case shape"].str.strip().str.lower().str.title()
+    selected_dialshape = st.sidebar.multiselect("Dial Shape", sorted(df["case shape"].dropna().unique()))
     
     # 6. Band Colour
-    df["Band Colour"] = df["Band Colour"].str.strip().str.lower().str.title()
-    selected_bandcol = st.sidebar.multiselect("Band Colour", sorted(df["Band Colour"].dropna().unique()))
+    df["band colour"] = df["band colour"].str.strip().str.lower().str.title()
+    selected_bandcol = st.sidebar.multiselect("Band Colour", sorted(df["band colour"].dropna().unique()))
 
     # 7. Band Material
-    df["Band Material"] = df["Band Material"].str.strip().str.lower().str.title()
-    selected_bandmaterial = st.sidebar.multiselect("Band Material", sorted(df["Band Material"].dropna().unique()))
+    df["band material"] = df["band material"].str.strip().str.lower().str.title()
+    selected_bandmaterial = st.sidebar.multiselect("Band Material", sorted(df["band material"].dropna().unique()))
 
     # 8. Movement
-    df["Movement"] = df["Movement"].str.strip().str.lower().str.title()
-    selected_movement = st.sidebar.multiselect("Movement", sorted(df["Movement"].dropna().unique()))
+    df["movement"] = df["movement"].str.strip().str.lower().str.title()
+    selected_movement = st.sidebar.multiselect("Movement", sorted(df["movement"].dropna().unique()))
     
 
     # Apply filters
@@ -70,20 +70,20 @@ def render_best_sellers(gender):
     if selected_priceband:
         filtered_df = filtered_df[filtered_df["price_band"].isin(selected_priceband)]
     filtered_df = filtered_df[
-        (filtered_df["Price"] >= selected_price[0]) & (filtered_df["Price"] <= selected_price[1])
+        (filtered_df["price"] >= selected_price[0]) & (filtered_df["price"] <= selected_price[1])
     ]
     if selected_brands:
-        filtered_df = filtered_df[filtered_df["Brand"].isin(selected_brands)]
+        filtered_df = filtered_df[filtered_df["brand"].isin(selected_brands)]
     if selected_dialcol:
-        filtered_df = filtered_df[filtered_df["Dial Colour"].isin(selected_dialcol)]
+        filtered_df = filtered_df[filtered_df["dial colour"].isin(selected_dialcol)]
     if selected_bandcol:
-        filtered_df = filtered_df[filtered_df["Band Colour"].isin(selected_bandcol)]
+        filtered_df = filtered_df[filtered_df["band colour"].isin(selected_bandcol)]
     if selected_dialshape:
-        filtered_df = filtered_df[filtered_df["Case Shape"].isin(selected_dialshape)]
+        filtered_df = filtered_df[filtered_df["case shape"].isin(selected_dialshape)]
     if selected_bandmaterial:
-        filtered_df = filtered_df[filtered_df["Band Material"].isin(selected_bandmaterial)]
+        filtered_df = filtered_df[filtered_df["band material"].isin(selected_bandmaterial)]
     if selected_movement:
-        filtered_df = filtered_df[filtered_df["Movement"].isin(selected_movement)]
+        filtered_df = filtered_df[filtered_df["movement"].isin(selected_movement)]
 
 # Pagination
     items_per_page = 20
