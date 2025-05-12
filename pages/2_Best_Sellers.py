@@ -49,7 +49,7 @@ def render_best_sellers(gender):
     selected_dialcol = st.sidebar.multiselect("Dial Colour", sorted(df["dial_colour"].dropna().unique()))
 
     # 5. Dial Shape
-    df["case_shape"] = df["cas_shape"].str.strip().str.lower().str.title()
+    df["case_shape"] = df["case_shape"].str.strip().str.lower().str.title()
     selected_dialshape = st.sidebar.multiselect("Dial Shape", sorted(df["case_shape"].dropna().unique()))
     
     # 6. Band Colour
