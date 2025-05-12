@@ -2,6 +2,7 @@ import os
 import pandas as pd
 from sqlalchemy import create_engine
 from urllib.parse import quote_plus
+import unicodedata
 
 # Load environment variables
 db = os.environ["SUPABASE_DB"]
@@ -24,17 +25,21 @@ for file in sorted(os.listdir(".")):
     if file.endswith(".xlsx") or file.endswith(".csv"):
         print(f"📄 Processing: {file}")
         try:
-            # Load data
+            # Load data with better encoding handling
             if file.endswith(".xlsx"):
                 df = pd.read_excel(file)
             else:
                 try:
-                    df = pd.read_csv(file, encoding="utf-8")
+                    df = pd.read_csv(file, encoding="utf-8-sig")  # Better for Excel exports
                 except UnicodeDecodeError:
-                    df = pd.read_csv(file, encoding="ISO-8859-1")
+                    df = pd.read_csv(file, encoding="cp1252")  # Windows-safe fallback
 
             # Clean column names
             df.columns = df.columns.str.strip().str.lower().str.replace(" ", "_")
+
+            # Clean text columns (normalize apostrophes, smart quotes, etc.)
+            for col in df.select_dtypes(include=["object"]).columns:
+                df[col] = df[col].astype(str).apply(lambda x: unicodedata.normalize("NFKC", x).replace("’", "'").replace("�", "'"))
 
             # Generate table name
             table_name = file.lower().replace(".xlsx", "").replace(".csv", "").replace(" ", "_")
