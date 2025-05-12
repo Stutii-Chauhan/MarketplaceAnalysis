@@ -45,20 +45,20 @@ def render_best_sellers(gender):
     selected_brands = st.sidebar.multiselect("Brand", sorted(df["brand"].dropna().unique()))
 
     # 4. Dial Colour
-    df["dial colour"] = df["dial colour"].str.strip().str.lower().str.title()
-    selected_dialcol = st.sidebar.multiselect("Dial Colour", sorted(df["dial colour"].dropna().unique()))
+    df["dial_colour"] = df["dial_colour"].str.strip().str.lower().str.title()
+    selected_dialcol = st.sidebar.multiselect("Dial Colour", sorted(df["dial_colour"].dropna().unique()))
 
     # 5. Dial Shape
-    df["case shape"] = df["case shape"].str.strip().str.lower().str.title()
-    selected_dialshape = st.sidebar.multiselect("Dial Shape", sorted(df["case shape"].dropna().unique()))
+    df["case_shape"] = df["cas_shape"].str.strip().str.lower().str.title()
+    selected_dialshape = st.sidebar.multiselect("Dial Shape", sorted(df["case_shape"].dropna().unique()))
     
     # 6. Band Colour
-    df["band colour"] = df["band colour"].str.strip().str.lower().str.title()
-    selected_bandcol = st.sidebar.multiselect("Band Colour", sorted(df["band colour"].dropna().unique()))
+    df["band_colour"] = df["band_colour"].str.strip().str.lower().str.title()
+    selected_bandcol = st.sidebar.multiselect("Band Colour", sorted(df["band_colour"].dropna().unique()))
 
     # 7. Band Material
-    df["band material"] = df["band material"].str.strip().str.lower().str.title()
-    selected_bandmaterial = st.sidebar.multiselect("Band Material", sorted(df["band material"].dropna().unique()))
+    df["band_material"] = df["band_material"].str.strip().str.lower().str.title()
+    selected_bandmaterial = st.sidebar.multiselect("Band Material", sorted(df["band_material"].dropna().unique()))
 
     # 8. Movement
     df["movement"] = df["movement"].str.strip().str.lower().str.title()
