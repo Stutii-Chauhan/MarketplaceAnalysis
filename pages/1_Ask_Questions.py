@@ -180,11 +180,7 @@ if user_input:
             df_result = pd.read_sql_query(sql_query, engine)
             st.session_state.query_result = df_result
 
-            # ✅ Track which table was used (optional)
-            for table in TABLE_SCHEMAS:
-                if table.lower() in sql_query.lower():
-                    st.session_state.last_table = table
-                    break
+
 
             # ✅ Show preview immediately
             st.markdown("### 📋 Query Output")
