@@ -14,7 +14,7 @@ engine = create_engine(f"postgresql://{USER}:{PASSWORD}@{HOST}:{PORT}/{DB}")
 @st.cache_data(ttl=600)
 def load_data(table_name):
     df = pd.read_sql_table(table_name, con=engine)
-    df["Price"] = pd.to_numeric(df["price"].str.replace(",", "").fillna("0"), errors="coerce").astype(int)
+    df["price"] = pd.to_numeric(df["price"].str.replace(",", "").fillna("0"), errors="coerce").astype(int)
     return df
 
 def render_best_sellers(gender):
@@ -27,8 +27,8 @@ def render_best_sellers(gender):
     
     st.sidebar.header("Filter Products")
 
-    # 1. Price Band (Checkboxes)
-    st.sidebar.markdown("**Price Band**")
+    # 1. price Band (Checkboxes)
+    st.sidebar.markdown("**price Band**")
     df["price_band"] = df["price_band"].str.strip().str.upper()
     price_band_options = sorted(df["price_band"].dropna().unique())
     selected_priceband = []
@@ -36,9 +36,9 @@ def render_best_sellers(gender):
         if st.sidebar.checkbox(band, key=f"price_band_{band}"):
             selected_priceband.append(band)
 
-    # 2. Price Range Slider
+    # 2. price Range Slider
     price_min, price_max = int(df["price"].min()), int(df["price"].max())
-    selected_price = st.sidebar.slider("Price Range", price_min, price_max, (price_min, price_max))
+    selected_price = st.sidebar.slider("price Range", price_min, price_max, (price_min, price_max))
 
     # 3. Brand
     df["brand"] = df["brand"].str.strip().str.lower().str.title()
@@ -132,7 +132,7 @@ def render_best_sellers(gender):
                                     <div style="font-size:0.95rem; line-height:1.6; text-align:left;">
                                         <b>Brand:</b> {row['Brand']}<br>
                                         <b>Model:</b> {row['Model Number']}<br>
-                                        <b>Price:</b> ₹{int(row['Price'])}<br>
+                                        <b>price:</b> ₹{int(row['price'])}<br>
                                         <b>Rating:</b> {round(row['Ratings'], 1) if pd.notna(row['Ratings']) else "N/A"}/5<br>
                                         <b>Discount:</b> {
                                             "No" if pd.notna(row["Discount"]) and row["Discount"] in ["0", "0.0"]
