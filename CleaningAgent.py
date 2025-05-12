@@ -27,8 +27,8 @@ df = df.dropna(subset=["url"])
 df = df.dropna(subset=["price"])
 df.count()
 
-#delete duplicate values with product name + model number
-df = df.drop_duplicates(subset=["product name", "model number"], keep="first")
+#delete duplicate values with product_name + model_number
+df = df.drop_duplicates(subset=["product_name", "model_number"], keep="first")
 df.count()
 
 #price cleaning
@@ -43,23 +43,23 @@ df = df[df["price"] >= 10000] #removing products with price < 10000
 df.count()
 
 #cleaning ratings
-df["rating(out of 5)"] = (
-    df["rating(out of 5)"]
+df["rating(out_of_5)"] = (
+    df["rating(out_of_5)"]
     .str.extract(r"(\d+\.?\d*)")        # extract only the numeric part
     .astype(float)
     .map(lambda x: int(x) if pd.notna(x) and x.is_integer() else round(x, 1) if pd.notna(x) else np.nan)
 )
 
-#adding price band
-df["price band"] = pd.cut(
+#adding price_band
+df["price_band"] = pd.cut(
     df["price"],
     bins=[0, 10000, 15000, 25000, 40000, float("inf")],
     labels=["<10K", "10K-15K", "15K-25K", "25K-40K", "40K+"],
     right=False
 )
 
-df["discount (%)"] = (
-    df["discount (%)"]
+df["discount_(%)"] = (
+    df["discount_(%)"]
     .astype(str)
     .str.extract(r"(\d+\.?\d*)")[0]         # extract numeric part
     .replace("", np.nan)
@@ -83,13 +83,13 @@ def normalize_to_mm(value):
 
     return f"{int(num)} Millimeters" if num.is_integer() else f"{num} Millimeters"
 
-df["band width"] = df["band width"].apply(normalize_to_mm)
-df["case diameter"] = df["case diameter"].apply(normalize_to_mm)
-df["case thickness"] = df["case thickness"].apply(normalize_to_mm)
+df["band_width"] = df["band_width"].apply(normalize_to_mm)
+df["case_diameter"] = df["case_diameter"].apply(normalize_to_mm)
+df["case_thickness"] = df["case_thickness"].apply(normalize_to_mm)
 
 #removing the unwanted keywords
 unwanted_keywords = ["pocket watch", "repair tool", "watch bezel", "watch band", "tool", "watch winder", "watch case"]
-df = df[~df["product name"].str.lower().str.contains('|'.join(unwanted_keywords))]
+df = df[~df["product_name"].str.lower().str.contains('|'.join(unwanted_keywords))]
 df.count()
 
 
@@ -151,7 +151,7 @@ brand_map = {
     "gc": "GC"
 }
 
-df["__product_lower__"] = df["product name"].str.lower()
+df["__product_lower__"] = df["product_name"].str.lower()
 df["__brand_match__"] = np.nan
 
 for keyword, clean_brand in brand_map.items():
@@ -169,7 +169,7 @@ df.drop(columns=["__product_lower__", "__brand_match__"], inplace=True)
 #Dividing Titan as Titan, Xylys, Edge and Raga
 def categorize_titan(row):
     brand = str(row["brand"]).strip().title()
-    product = str(row["product name"]).strip().title()
+    product = str(row["product_name"]).strip().title()
 
     if brand == "Titan":
         if "Xylys" in product:
@@ -196,9 +196,9 @@ def infer_gender(product_name):
         return "Men"
     else:
         return "Unisex"
-df["gender"] = df["product name"].apply(infer_gender)
+df["gender"] = df["product_name"].apply(infer_gender)
 
 #adding as of date
-df["as of date"] = datetime.today().strftime("%Y-%m-%d")
+df["as_of_date"] = datetime.today().strftime("%Y-%m-%d")
 
 df.to_sql("scraped_data_cleaned", con=engine, if_exists="replace", index=False)
