@@ -184,10 +184,14 @@ if user_input:
         except Exception as e:
             st.error(f"Error executing query: {e}")
 
-# ---- Chat History + Debug ----
-with st.expander("📝 Chat History"):
+st.markdown("### 🧠 Chat History")
+chat_container = st.container()
+with chat_container:
     for msg in st.session_state.chat_history:
-        st.markdown(f"**{msg['role'].capitalize()}**: {msg['content']}")
+        if msg["role"] == "user":
+            st.markdown(f"🧍‍♂️ **You:** {msg['content']}")
+        else:
+            st.markdown(f"🤖 **Assistant:** `{msg['content']}`")
 
 if st.session_state.last_table:
     st.caption(f"📌 Last table used: `{st.session_state.last_table}`")
