@@ -167,10 +167,24 @@ user_input = st.text_input("Ask a question about your data")
 
 if user_input:
     st.session_state.chat_history.append({"role": "user", "content": user_input})
-    with st.spinner("Generating SQL..."):
+    with st.spinner("Buzz is thinking..."):
         sql_query = generate_sql_with_context(st.session_state.chat_history)
         st.session_state.chat_history.append({"role": "assistant", "content": sql_query})
         st.session_state.last_sql = sql_query
+
+        # ✅ Auto-run the SQL
+        try:
+            df_result = pd.read_sql_query(sql_query, engine)
+            st.session_state.query_result = df_result
+
+            # ✅ Optional: detect and store the used table
+            for table in TABLE_SCHEMAS:
+                if table.lower() in sql_query.lower():
+                    st.session_state.last_table = table
+                    break
+        except Exception as e:
+            st.error(f"❌ Query execution failed: {e}")
+        
 
         try:
             df_result = pd.read_sql_query(sql_query, engine)
