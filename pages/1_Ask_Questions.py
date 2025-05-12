@@ -22,48 +22,72 @@ engine = create_engine(f"postgresql://{USER}:{PASSWORD}@{HOST}:{PORT}/{DB}")
 
 # ---- Table Schemas ----
 TABLE_SCHEMAS = {
-    "master_watch_data": [
-        "Brand", "Product Name", "Model Number", "Model Year", "Price", "Rating",
-        "Discount", "Band Colour", "Band Material", "Band Width", "Case Diameter",
-        "Case Material", "Case Thickness", "Dial Colour", "Crystal Material",
-        "Case Shape", "Movement", "Gender"
+    "scraped_data_cleaned": [
+        "file", "url", "brand", "product_name", "model_number", "model_year", "price",
+        "rating(out_of_5)", "discount_(%)", "band_colour", "band_material", "band_width",
+        "case_diameter", "case_material", "case_thickness", "dial_colour", "crystal_material",
+        "case_shape", "movement", "water_resistance_de...", "special_features", "image",
+        "imageurl", "price_band", "gender", "as_of_date"
     ],
-    "best_sellers_men": [
-        "Brand", "Product Name", "Price", "Rating", "Rank", "Gender"
+    "final_watch_dataset_women_output_rows": [
+        "url", "brand", "product_name", "model_number", "price", "ratings", "discount",
+        "band_colour", "band_material", "band_width", "case_diameter", "case_material",
+        "case_thickness", "dial_colour", "crystal_material", "case_shape", "movement",
+        "water_resistance_depth", "special_features", "imageurl", "image"
     ],
-    "best_sellers_women": [
-        "Brand", "Product Name", "Price", "Rating", "Rank", "Gender"
+    "final_watch_dataset_men_output_rows": [
+        "url", "brand", "product_name", "model_number", "price", "ratings", "discount",
+        "band_colour", "band_material", "band_width", "case_diameter", "case_material",
+        "case_thickness", "dial_colour", "crystal_material", "case_shape", "movement",
+        "water_resistance_depth", "special_features", "imageurl", "image"
     ]
 }
 
-# ---- Helper: Schema String for Prompt ----
+# ---- Helper Functions ----
 def generate_schema_prompt():
     return "\n".join([f"- {table}: [{', '.join(cols)}]" for table, cols in TABLE_SCHEMAS.items()])
 
-# ---- Helper: Generate SQL using chat context ----
 def generate_sql_with_context(chat_history):
     context = "\n".join([f"{msg['role']}: {msg['content']}" for msg in chat_history])
-    prompt = f"""
-You are a SQL expert for a PostgreSQL watch marketplace database.
-
-Here are the available tables and their columns:
-{generate_schema_prompt()}
-
-Use this ongoing chat to interpret follow-up questions too.
-
-{context}
-
-Now generate only the correct SQL query. Do not explain or describe.
+    table_guidance = """
+Use these rules to choose the correct table:
+- Use `scraped_data_cleaned` for all general queries across genders, brands, discounts, etc.
+- Use `final_watch_dataset_men_output_rows` for men-specific feature/price queries.
+- Use `final_watch_dataset_women_output_rows` for women-specific ones.
+- Reuse previous context if question is a follow-up.
 """
 
-    response = model.generate_content(prompt)
-    return response.text.strip().split("SQL Query:")[-1].strip("```sql").strip("```").strip()
+    prompt = f"""
+You are a PostgreSQL SQL expert working with watch data.
+
+Available table schemas:
+{generate_schema_prompt()}
+
+{table_guidance}
+
+Conversation so far:
+{context}
+
+Now generate a valid SQL query for the user's most recent question.
+Only return the SQL. Do not explain.
+"""
+
+    try:
+        response = model.generate_content(prompt)
+        sql = response.text.strip().split("```sql")[-1].strip("```").strip()
+        return sql
+    except Exception as e:
+        return f"Gemini failed: {e}"
 
 # ---- Session State Init ----
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
 if "query_result" not in st.session_state:
     st.session_state.query_result = None
+if "last_sql" not in st.session_state:
+    st.session_state.last_sql = ""
+if "last_table" not in st.session_state:
+    st.session_state.last_table = ""
 
 # ---- Layout: Overview + Chart ----
 col1, col2 = st.columns(2)
@@ -97,15 +121,26 @@ user_input = st.text_input("Ask a question about your data")
 if user_input:
     st.session_state.chat_history.append({"role": "user", "content": user_input})
     with st.spinner("Generating SQL..."):
+        sql_query = generate_sql_with_context(st.session_state.chat_history)
+        st.session_state.chat_history.append({"role": "assistant", "content": sql_query})
+        st.session_state.last_sql = sql_query
+
         try:
-            sql_query = generate_sql_with_context(st.session_state.chat_history)
-            st.session_state.chat_history.append({"role": "assistant", "content": sql_query})
             df_result = pd.read_sql_query(sql_query, engine)
             st.session_state.query_result = df_result
+
+            # Try to extract table name from SQL (best effort)
+            for table in TABLE_SCHEMAS.keys():
+                if table.lower() in sql_query.lower():
+                    st.session_state.last_table = table
+                    break
         except Exception as e:
             st.error(f"Error executing query: {e}")
 
-# ---- Chat History ----
+# ---- Chat History + Debug ----
 with st.expander("📝 Chat History"):
     for msg in st.session_state.chat_history:
         st.markdown(f"**{msg['role'].capitalize()}**: {msg['content']}")
+
+if st.session_state.last_table:
+    st.caption(f"📌 Last table used: `{st.session_state.last_table}`")
