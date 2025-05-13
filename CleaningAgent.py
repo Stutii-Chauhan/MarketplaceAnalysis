@@ -247,4 +247,10 @@ df["gender"] = df["product_name"].apply(infer_gender)
 #adding as of date
 df["as_of_date"] = datetime.today().strftime("%Y-%m-%d")
 
+# Ensure 'file' is string and sort by numeric part
+df['file'] = df['file'].astype(str)
+df['file_number'] = df['file'].str.extract(r'(\d+)').astype(int)
+df = df.sort_values(by='file_number').drop(columns=['file_number'])
+
+# Now write to Supabase
 df.to_sql("scraped_data_cleaned", con=engine, if_exists="replace", index=False)
