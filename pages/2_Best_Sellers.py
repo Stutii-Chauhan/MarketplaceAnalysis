@@ -96,7 +96,7 @@ def render_best_sellers(gender):
     filtered_df = filtered_df.dropna(subset=["product_name", "url", "imageurl", "price"], how="any")
     
     # --- Pagination Setup ---
-    items_per_page = 20
+    items_per_page = 15
     total_items = len(filtered_df)
     total_pages = (total_items - 1) // items_per_page + 1
     if "page_number" not in st.session_state:
@@ -112,10 +112,10 @@ def render_best_sellers(gender):
         st.markdown(f"**Showing {start_idx + 1}–{min(end_idx, total_items)} of {total_items} products**")
     
         rows = list(paged_df.iterrows())
-        for i in range(0, len(rows), 4):
+        for i in range(0, len(rows), 3):
             with st.container():
-                cols = st.columns(4)
-                for j in range(4):
+                cols = st.columns(3)
+                for j in range(3):
                     if i + j < len(rows):
                         _, row = rows[i + j]
     
@@ -132,7 +132,7 @@ def render_best_sellers(gender):
                                             justify-content:space-between; width:100%;">
                                     <div style='text-align:center'>
                                         <a href="{row['url']}" target="_blank">
-                                            <img src="{row['imageurl']}" style="height:240px; object-fit:contain; margin:auto; margin-bottom:15px;" />
+                                            <img src="{row['imageurl']}" style="height:250px; width:250px; object-fit:contain; margin:auto; margin-bottom:15px;"/>
                                         </a>
                                     </div>
                                     <div style="font-weight:600; font-size:1rem; margin-bottom:10px;
