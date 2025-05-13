@@ -30,7 +30,7 @@ df.count()
 import pandas as pd
 import re
 
-# ✅ Final model number pattern – allows digit-first, hyphens, dots
+# ✅ Final model number pattern – allows digit-first, multiple hyphens, dots
 MODEL_PATTERN = r'(?<!\w)([A-Z0-9]{3,15}(?:[\.\-][A-Z0-9]{1,6})*)(?!\w)'
 
 # 🚫 Known bad values to exclude
@@ -50,14 +50,15 @@ def extract_model_number_from_text(text):
         return pd.NA
     text = text.upper()
 
-    # Break into tokens using "/", ",", or "or"
+    # Split into possible tokens using "/", ",", or "or"
     tokens = re.split(r"[\/,]| or ", text)
     for token in tokens:
         token = token.strip()
         match = re.search(MODEL_PATTERN, token)
         if match:
             value = match.group(1)
-            if value in BRAND_BLACKLIST:  # Avoid brand names as model numbers
+            # ✅ Skip only exact brand name matches
+            if value in BRAND_BLACKLIST:
                 continue
             return value
     return pd.NA
@@ -85,6 +86,7 @@ def clean_model_number(row):
 
 # ✅ Apply cleaning to your DataFrame
 df["model_number"] = df.apply(clean_model_number, axis=1)
+
 
 
 
