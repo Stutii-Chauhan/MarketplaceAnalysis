@@ -82,13 +82,13 @@ def render_best_sellers(gender):
     if selected_brands:
         filtered_df = filtered_df[filtered_df["brand"].isin(selected_brands)]
     if selected_dialcol:
-        filtered_df = filtered_df[filtered_df["dial colour"].isin(selected_dialcol)]
+        filtered_df = filtered_df[filtered_df["dial_colour"].isin(selected_dialcol)]
     if selected_bandcol:
-        filtered_df = filtered_df[filtered_df["band colour"].isin(selected_bandcol)]
+        filtered_df = filtered_df[filtered_df["band_colour"].isin(selected_bandcol)]
     if selected_dialshape:
-        filtered_df = filtered_df[filtered_df["case shape"].isin(selected_dialshape)]
+        filtered_df = filtered_df[filtered_df["case_shape"].isin(selected_dialshape)]
     if selected_bandmaterial:
-        filtered_df = filtered_df[filtered_df["band material"].isin(selected_bandmaterial)]
+        filtered_df = filtered_df[filtered_df["band_material"].isin(selected_bandmaterial)]
     if selected_movement:
         filtered_df = filtered_df[filtered_df["movement"].isin(selected_movement)]
 
