@@ -27,6 +27,45 @@ df = df.dropna(subset=["url"])
 df = df.dropna(subset=["price"])
 df.count()
 
+#Cleaning Model Number column
+
+def clean_and_fix_model_number(row):
+    def clean_model(val):
+        if pd.isna(val):
+            return None
+        val = str(val).strip()
+
+        blacklist = ["casual watch", "watches", "combo", "legacy", "pack", "premium", "design", "men", "women"]
+        val_l = val.lower()
+        if any(x in val_l for x in blacklist) or len(val) <= 3:
+            return None
+
+        # Try to extract the model pattern
+        match = re.search(r'([A-Z]{1,3}[\dA-Z\-\.]{3,})$', val)
+        return match.group(1) if match else None
+
+    # Step 1: Clean existing Model Number
+    model_num = clean_model(row.get("Model Number"))
+    if model_num:
+        return model_num
+
+    # Step 2: Fallback to Part Number
+    part_num = row.get("Part Number")
+    if pd.notna(part_num) and str(part_num).strip():
+        return str(part_num).strip().upper()
+
+    # Step 3: Try extracting from Product Name
+    product_name = row.get("Product Name", "")
+    if pd.notna(product_name):
+        match = re.findall(r'([A-Z]{2,5}[\d]{3,}[A-Z]{0,5})', product_name)
+        if match:
+            return match[0]
+
+    # Step 4: Fallback to "NA"
+    return "NA"
+
+df["Model Number"] = df.apply(clean_and_fix_model_number, axis=1)
+
 #delete duplicate values with product_name + model_number
 df = df.drop_duplicates(subset=["product_name", "model_number"], keep="first")
 df.count()
