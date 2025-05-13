@@ -19,7 +19,7 @@ password = quote_plus(raw_password)
 engine = create_engine(f"postgresql://{user}:{password}@{host}:{port}/{db}")
 
 #read the table
-df = pd.read_sql_table("bestsellers_men", con=engine)
+df = pd.read_sql_table("bestsellers_women", con=engine)
 df.count()
 
 #delete rows with NaN/blank in url column and also in the price Column.
@@ -259,4 +259,4 @@ df['file'] = df['file'].astype(int)
 df = df.sort_values(by='file')
 
 #Upload to Supabase
-df.to_sql("scraped_data_cleaned_men", con=engine, if_exists="replace", index=False)
+df.to_sql("scraped_data_cleaned_women", con=engine, if_exists="replace", index=False)
