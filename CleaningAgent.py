@@ -244,17 +244,13 @@ def infer_gender(product_name):
         return "Unisex"
 df["gender"] = df["product_name"].apply(infer_gender)
 
-#adding as of date
-df["as_of_date"] = datetime.today().strftime("%Y-%m-%d")
+# Strip '.html', convert to int, sort
+df['file'] = df['file'].astype(str).str.replace('.html', '', regex=False)
+df = df.sort_values(by='file', key=lambda x: x.astype(int))
 
-# Ensure 'file' column is string
-df['file'] = df['file'].astype(str)
+# Optionally restore the original format
+df['file'] = df['file'] + '.html'
 
-# Extract numeric part from file name
-df['file_num'] = df['file'].str.extract(r'(\d+)').astype(int)
-
-# Sort by numeric value
-df = df.sort_values(by='file_num').drop(columns=['file_num'])
-
-# Then upload to Supabase
+# Now upload
 df.to_sql("scraped_data_cleaned", con=engine, if_exists="replace", index=False)
+
