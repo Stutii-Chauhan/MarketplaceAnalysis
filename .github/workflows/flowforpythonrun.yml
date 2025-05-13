@@ -4,8 +4,8 @@ on:
   push:
     paths:
       - "CleaningAgent.py"
-      - "**/*.csv"
-      - "**/*.xlsx"
+      - "cleaning_bestsellers_men.py"
+      - "cleaning_bestsellers_women.py"
 
   workflow_run:
     workflows: ["Upload to Supabase"]
@@ -13,7 +13,7 @@ on:
       - completed
 
 jobs:
-  run-cleaning-agent:
+  upload:
     if: github.event_name == 'push' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
 
@@ -30,8 +30,35 @@ jobs:
         run: |
           pip install pandas sqlalchemy psycopg2-binary openpyxl
 
-      - name: Run Cleaning Agent
+      - name: Upload raw data to Supabase
+        run: python uploadFiletoSupabase.py
+        env:
+          SUPABASE_DB: ${{ secrets.SUPABASE_DB }}
+          SUPABASE_USER: ${{ secrets.SUPABASE_USER }}
+          SUPABASE_PASSWORD: ${{ secrets.SUPABASE_PASSWORD }}
+          SUPABASE_HOST: ${{ secrets.SUPABASE_HOST }}
+          SUPABASE_PORT: ${{ secrets.SUPABASE_PORT }}
+
+      - name: Run Cleaning Step 1
         run: python CleaningAgent.py
+        env:
+          SUPABASE_DB: ${{ secrets.SUPABASE_DB }}
+          SUPABASE_USER: ${{ secrets.SUPABASE_USER }}
+          SUPABASE_PASSWORD: ${{ secrets.SUPABASE_PASSWORD }}
+          SUPABASE_HOST: ${{ secrets.SUPABASE_HOST }}
+          SUPABASE_PORT: ${{ secrets.SUPABASE_PORT }}
+
+      - name: Run Cleaning Step 2
+        run: python cleaning_bestsellers_men.py
+        env:
+          SUPABASE_DB: ${{ secrets.SUPABASE_DB }}
+          SUPABASE_USER: ${{ secrets.SUPABASE_USER }}
+          SUPABASE_PASSWORD: ${{ secrets.SUPABASE_PASSWORD }}
+          SUPABASE_HOST: ${{ secrets.SUPABASE_HOST }}
+          SUPABASE_PORT: ${{ secrets.SUPABASE_PORT }}
+
+      - name: Run Cleaning Step 3
+        run: python cleaning_bestsellers_women.py
         env:
           SUPABASE_DB: ${{ secrets.SUPABASE_DB }}
           SUPABASE_USER: ${{ secrets.SUPABASE_USER }}
