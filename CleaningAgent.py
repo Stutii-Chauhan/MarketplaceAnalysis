@@ -45,17 +45,17 @@ def clean_and_fix_model_number(row):
         return match.group(1) if match else None
 
     # Step 1: Clean existing Model Number
-    model_num = clean_model(row.get("Model Number"))
+    model_num = clean_model(row.get("model_number"))
     if model_num:
         return model_num
 
     # Step 2: Fallback to Part Number
-    part_num = row.get("Part Number")
+    part_num = row.get("part_number")
     if pd.notna(part_num) and str(part_num).strip():
         return str(part_num).strip().upper()
 
     # Step 3: Try extracting from Product Name
-    product_name = row.get("Product Name", "")
+    product_name = row.get("product_name", "")
     if pd.notna(product_name):
         match = re.findall(r'([A-Z]{2,5}[\d]{3,}[A-Z]{0,5})', product_name)
         if match:
@@ -64,22 +64,21 @@ def clean_and_fix_model_number(row):
     # Step 4: Fallback to "NA"
     return "NA"
 
-df["Model Number"] = df.apply(clean_and_fix_model_number, axis=1)
+df["model_number"] = df.apply(clean_and_fix_model_number, axis=1)
 
 #delete duplicate values with product_name + model_number
 df = df.drop_duplicates(subset=["product_name", "model_number"], keep="first")
 df.count()
 
 #price cleaning
-df["Price"] = (
-    df["Price"]
+df["price"] = (
+    df["price"]
     .str.replace(",", "")                   # Remove commas
     .str.replace(r"\.$", "", regex=True)   # Remove trailing dot if exists
     .astype(float)
     .round(2)
 )
-df = df[df["Price"] >= 10000] #removing products with price < 10000
-df = df[df["price"] >= 10000]
+df = df[df["price"] >= 10000] #removing products with price < 10000
 df.count()
 
 #cleaning ratings
