@@ -56,7 +56,7 @@ def extract_model_number_from_text(text):
         token = token.strip()
         matches = re.findall(MODEL_PATTERN, token)
         for value in matches:
-            if value in BRAND_BLACKLIST:
+            if value in BRAND_BLACKLIST or value in BLACKLIST or not re.search(r'\d', value):
                 continue
             return value
     return pd.NA
