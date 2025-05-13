@@ -27,22 +27,22 @@ df = df.dropna(subset=["url"])
 df = df.dropna(subset=["price"])
 df.count()
 
-# Updated pattern: allows uppercase+numbers with optional dot/dash and doesn't rely on \b
-MODEL_PATTERN = r'[A-Z]{1,4}\d{1,5}(?:[\.\-]\d{1,5})?(?:[\-][A-Z0-9]{1,5})?'
+# ✅ Final model number pattern – allows digit-first, hyphens, dots
+MODEL_PATTERN = r'(?<!\w)([A-Z0-9]{3,10}(?:[\.\-][A-Z0-9]{1,5})*)(?!\w)'
 
 def extract_model_number_from_text(text):
     if not isinstance(text, str) or not text.strip():
         return pd.NA
     text = text.upper()
 
-    # Split into tokens using common delimiters
+    # Split into possible tokens using "/", ",", or "or"
     tokens = re.split(r"[\/,]| or ", text)
 
     for token in tokens:
         token = token.strip()
         match = re.search(MODEL_PATTERN, token)
         if match:
-            return match.group(0)
+            return match.group(1)
     return pd.NA
 
 def clean_model_number(row):
@@ -50,20 +50,21 @@ def clean_model_number(row):
     part = str(row.get("part_number", "")).strip().upper()
     product_name = str(row.get("product_name", "")).strip()
 
+    #  Known bad values
     blacklist = {
         "REGALIA", "STAINLESS", "AUTOMATICS", "COMBO", "PREMIUM", "CASUAL WATCH",
         "", "NA", "NONE", "NAN"
     }
 
-    # Step 1: If model is valid
+    # Step 1: Use model_number if valid
     if model and model not in blacklist and re.search(MODEL_PATTERN, model):
         return model
 
-    # Step 2: If part number is valid
+    # Step 2: Use part_number if valid
     if part and part not in blacklist and re.search(MODEL_PATTERN, part):
         return part
 
-    # Step 3: Extract from product name
+    # Step 3: Extract from product_name
     model_from_name = extract_model_number_from_text(product_name)
     if pd.notna(model_from_name):
         return model_from_name
@@ -71,7 +72,7 @@ def clean_model_number(row):
     # Step 4: Fallback
     return "NA"
 
-# Apply the function
+# ✅ Apply cleaning to your DataFrame
 df["model_number"] = df.apply(clean_model_number, axis=1)
 
 
