@@ -35,7 +35,7 @@ MODEL_PATTERN = r'(?<!\w)([A-Z0-9]{3,15}(?:[\.\-][A-Z0-9]{1,6})*)(?!\w)'
 
 # 🚫 Known bad values to exclude
 BLACKLIST = {
-    "REGALIA", "STAINLESS", "AUTOMATICS", "COMBO", "PREMIUM", "CASUAL WATCH",
+    "REGALIA", "STAINLESS", "AUTOMATICS", "COMBO", "PREMIUM", "CASUAL WATCH", "ANALOG",
     "", "NA", "NONE", "NAN"
 }
 
@@ -54,10 +54,8 @@ def extract_model_number_from_text(text):
     tokens = re.split(r"[\/,]| or ", text)
     for token in tokens:
         token = token.strip()
-        match = re.search(MODEL_PATTERN, token)
-        if match:
-            value = match.group(1)
-            # ✅ Skip only exact brand name matches
+        matches = re.findall(MODEL_PATTERN, token)
+        for value in matches:
             if value in BRAND_BLACKLIST:
                 continue
             return value
