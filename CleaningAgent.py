@@ -83,15 +83,15 @@ def clean_model_number(row):
 # ✅ Apply cleaning to your DataFrame
 df["model_number"] = df.apply(clean_model_number, axis=1)
 
-def retain_only_model_number(text):
-    if not isinstance(text, str):
-        return text
-    text = text.upper()
-    match = re.search(MODEL_PATTERN, text)
-    return match.group(1) if match else text
+# def retain_only_model_number(text):
+#     if not isinstance(text, str):
+#         return text
+#     text = text.upper()
+#     match = re.search(MODEL_PATTERN, text)
+#     return match.group(1) if match else text
 
-# ✨ Apply post-cleaning to keep only model pattern
-df["model_number"] = df["model_number"].apply(retain_only_model_number)
+# # ✨ Apply post-cleaning to keep only model pattern
+# df["model_number"] = df["model_number"].apply(retain_only_model_number)
 
 
 #delete duplicate values with product_name + model_number
