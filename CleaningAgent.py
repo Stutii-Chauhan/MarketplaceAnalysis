@@ -247,12 +247,14 @@ df["gender"] = df["product_name"].apply(infer_gender)
 #adding as of date
 df["as_of_date"] = datetime.today().strftime("%Y-%m-%d")
 
-# Ensure 'file' is string and sort by numeric part
+# Ensure 'file' column is string
 df['file'] = df['file'].astype(str)
-df['file_number'] = df['file'].str.extract(r'(\d+)').astype(int)
-df = df.sort_values(by='file_number').drop(columns=['file_number'])
 
-# Now write to Supabase
+# Extract numeric part from file name
+df['file_num'] = df['file'].str.extract(r'(\d+)').astype(int)
 
-df = df.sort_values(by='file', key=lambda col: col.map(lambda x: int(re.search(r'\d+', x).group()) if pd.notna(x) else -1))
+# Sort by numeric value
+df = df.sort_values(by='file_num').drop(columns=['file_num'])
 
+# Then upload to Supabase
+df.to_sql("scraped_data_cleaned", con=engine, if_exists="replace", index=False)
