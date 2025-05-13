@@ -29,6 +29,8 @@ df.count()
 
 #Cleaning Model Number column
 
+#Cleaning Model Number column
+
 def clean_and_fix_model_number(row):
     def clean_model(val):
         if pd.isna(val):
@@ -64,6 +66,7 @@ def clean_and_fix_model_number(row):
     # Step 4: Fallback to "NA"
     return "NA"
 
+# Apply to DataFrame
 df["model_number"] = df.apply(clean_and_fix_model_number, axis=1)
 
 #delete duplicate values with product_name + model_number
