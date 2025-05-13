@@ -253,4 +253,6 @@ df['file_number'] = df['file'].str.extract(r'(\d+)').astype(int)
 df = df.sort_values(by='file_number').drop(columns=['file_number'])
 
 # Now write to Supabase
-df.to_sql("scraped_data_cleaned", con=engine, if_exists="replace", index=False)
+
+df = df.sort_values(by='file', key=lambda col: col.map(lambda x: int(re.search(r'\d+', x).group()) if pd.notna(x) else -1))
+
