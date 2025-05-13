@@ -22,7 +22,7 @@ engine = create_engine(f"postgresql://{user}:{password}@{host}:{port}/{db}")
 df = pd.read_sql_table("bestsellers_women", con=engine)
 df.count()
 
-#delete rows with NaN/blank in url column and also in the price Column.
+#delete rows with NaN/blank in url column and also in the price column
 df = df.dropna(subset=["url"])
 df = df.dropna(subset=["price"])
 df.count()
