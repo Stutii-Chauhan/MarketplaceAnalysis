@@ -1,6 +1,7 @@
 name: Notebook Cleaning Flow
 
 on:
+  workflow_dispatch:
   push:
     paths:
       - "CleaningAgent.py"
@@ -31,7 +32,7 @@ jobs:
           pip install pandas sqlalchemy psycopg2-binary openpyxl
 
       - name: Upload raw data to Supabase
-        run: python uploadFiletoSupabase.py
+        run: python UploadFiletoSupabase.py
         env:
           SUPABASE_DB: ${{ secrets.SUPABASE_DB }}
           SUPABASE_USER: ${{ secrets.SUPABASE_USER }}
