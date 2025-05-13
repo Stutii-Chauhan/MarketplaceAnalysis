@@ -29,45 +29,45 @@ df.count()
 
 #Cleaning Model Number column
 
-#Cleaning Model Number column
+# Define blacklist
+blacklist = {
+    "casual watch", "armani exchange watches", "combo", "premium combo",
+    "combo of 2", "legacy", "bergen", "cercle kendall", "", "nan", "none"
+}
 
-def clean_and_fix_model_number(row):
-    def clean_model(val):
-        if pd.isna(val):
-            return None
-        val = str(val).strip()
+# Function to extract model-like patterns from product_name
+def extract_model_from_name(name):
+    if not isinstance(name, str):
+        return pd.NA
+    name = name.upper()
+    matches = re.findall(r'\b[A-Z]{2,5}[\d]{2,6}[A-Z0-9]*\b', name)
+    return matches[0] if matches else pd.NA
 
-        blacklist = ["casual watch", "watches", "combo", "legacy", "pack", "premium", "design", "men", "women"]
-        val_l = val.lower()
-        if any(x in val_l for x in blacklist) or len(val) <= 3:
-            return None
+# Main cleaning function
+def clean_model_number(row):
+    model = str(row.get("model_number", "")).strip()
+    part = str(row.get("part_number", "")).strip().upper()
+    product_name = str(row.get("product_name", "")).strip()
 
-        # Try to extract the model pattern
-        match = re.search(r'([A-Z]{1,3}[\dA-Z\-\.]{3,})$', val)
-        return match.group(1) if match else None
+    # Step 1: Check model validity
+    if model.lower() not in blacklist and model.strip():
+        return model.upper()
 
-    # Step 1: Clean existing Model Number
-    model_num = clean_model(row.get("model_number"))
-    if model_num:
-        return model_num
+    # Step 2: Fallback to part number if model is bad
+    if part and part.lower() not in blacklist:
+        return part
 
-    # Step 2: Fallback to Part Number
-    part_num = row.get("part_number")
-    if pd.notna(part_num) and str(part_num).strip():
-        return str(part_num).strip().upper()
+    # Step 3: Fallback to product name
+    model_from_name = extract_model_from_name(product_name)
+    if pd.notna(model_from_name):
+        return model_from_name
 
-    # Step 3: Try extracting from Product Name
-    product_name = row.get("product_name", "")
-    if pd.notna(product_name):
-        match = re.findall(r'([A-Z]{2,5}[\d]{3,}[A-Z]{0,5})', product_name)
-        if match:
-            return match[0]
-
-    # Step 4: Fallback to "NA"
+    # Step 4: Default to "NA"
     return "NA"
 
-# Apply to DataFrame
-df["model_number"] = df.apply(clean_and_fix_model_number, axis=1)
+# Apply logic
+df["model_number"] = df.apply(clean_model_number, axis=1)
+
 
 #delete duplicate values with product_name + model_number
 df = df.drop_duplicates(subset=["product_name", "model_number"], keep="first")
