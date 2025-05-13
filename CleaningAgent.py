@@ -27,57 +27,42 @@ df = df.dropna(subset=["url"])
 df = df.dropna(subset=["price"])
 df.count()
 
-#Cleaning Model Number column
+MODEL_PATTERN = r'\b([A-Z]{1,4}\d{3,6}[A-Z0-9]*)(?:[/\-][A-Z0-9]+)?\b'
 
-import re
-import pandas as pd
-
-# List of known brands that might appear in model_number
-brand_prefixes = ["EMPORIO ARMANI", "FOSSIL", "TITAN", "TIMEX", "SEIKO", "CASIO", "MICHAEL KORS", "ARMANI EXCHANGE", "TISSOT", "MOVADO"]
-
-# Lowercased blacklist terms
-blacklist = {
-    "casual watch", "armani exchange watches", "combo", "premium combo",
-    "combo of 2", "legacy", "bergen", "cercle kendall", "", "nan", "none"
-}
-
-def extract_model_number_from_string(text):
-    if not isinstance(text, str):
+def extract_model_number_from_text(text):
+    if not isinstance(text, str) or not text.strip():
         return pd.NA
-    text = text.upper().strip()
-
-    # Remove brand prefixes
-    for brand in brand_prefixes:
-        if text.startswith(brand):
-            text = text.replace(brand, "").strip()
-
-    # Extract alphanumeric model pattern
-    matches = re.findall(r'\b[A-Z0-9]{3,}\b', text)
+    text = text.upper()
+    matches = re.findall(MODEL_PATTERN, text)
     return matches[0] if matches else pd.NA
 
 def clean_model_number(row):
-    model = str(row.get("model_number", "")).strip().lower()
+    model = str(row.get("model_number", "")).strip().upper()
     part = str(row.get("part_number", "")).strip().upper()
-    name = str(row.get("product_name", "")).strip()
+    product_name = str(row.get("product_name", "")).strip()
 
-    # Step 1: model_number is valid and not blacklisted
-    if model not in blacklist and model:
-        cleaned = extract_model_number_from_string(model)
-        if pd.notna(cleaned):
-            return cleaned
+    # Define invalids
+    blacklist = {
+        "REGALIA", "STAINLESS", "AUTOMATICS", "COMBO", "PREMIUM", "CASUAL WATCH",
+        "", "NA", "NONE", "NAN"
+    }
 
-    # Step 2: part_number fallback
-    if part and part.lower() not in blacklist:
+    # Step 1: If model is valid
+    if model and model not in blacklist and re.fullmatch(MODEL_PATTERN, model):
+        return model
+
+    # Step 2: Use part number if valid
+    if part and part not in blacklist and re.fullmatch(MODEL_PATTERN, part):
         return part
 
-    # Step 3: extract from product_name
-    extracted = extract_model_number_from_string(name)
-    if pd.notna(extracted):
-        return extracted
+    # Step 3: Extract from product_name
+    model_from_name = extract_model_number_from_text(product_name)
+    if pd.notna(model_from_name):
+        return model_from_name
 
     return "NA"
 
-# Apply to your DataFrame
+# Apply
 df["model_number"] = df.apply(clean_model_number, axis=1)
 
 
