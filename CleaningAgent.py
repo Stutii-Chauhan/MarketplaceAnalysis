@@ -27,25 +27,22 @@ df = df.dropna(subset=["url"])
 df = df.dropna(subset=["price"])
 df.count()
 
-import pandas as pd
-import re
-
-# Improved regex pattern: accepts dots, hyphens, and alphanumeric formats
-MODEL_PATTERN = r'\b([A-Z]{1,4}\d{2,10}[A-Z0-9\-\.]*)\b'
+# Updated pattern: allows uppercase+numbers with optional dot/dash and doesn't rely on \b
+MODEL_PATTERN = r'[A-Z]{1,4}\d{1,5}(?:[\.\-]\d{1,5})?(?:[\-][A-Z0-9]{1,5})?'
 
 def extract_model_number_from_text(text):
     if not isinstance(text, str) or not text.strip():
         return pd.NA
     text = text.upper()
 
-    # Split text to extract multiple options if any
+    # Split into tokens using common delimiters
     tokens = re.split(r"[\/,]| or ", text)
 
     for token in tokens:
         token = token.strip()
         match = re.search(MODEL_PATTERN, token)
         if match:
-            return match.group(1)
+            return match.group(0)
     return pd.NA
 
 def clean_model_number(row):
@@ -58,12 +55,12 @@ def clean_model_number(row):
         "", "NA", "NONE", "NAN"
     }
 
-    # Step 1: Use model if it's clean
-    if model and model not in blacklist and re.fullmatch(MODEL_PATTERN, model):
+    # Step 1: If model is valid
+    if model and model not in blacklist and re.search(MODEL_PATTERN, model):
         return model
 
-    # Step 2: Use part number if clean
-    if part and part not in blacklist and re.fullmatch(MODEL_PATTERN, part):
+    # Step 2: If part number is valid
+    if part and part not in blacklist and re.search(MODEL_PATTERN, part):
         return part
 
     # Step 3: Extract from product name
@@ -74,11 +71,8 @@ def clean_model_number(row):
     # Step 4: Fallback
     return "NA"
 
-# Apply to your DataFrame
+# Apply the function
 df["model_number"] = df.apply(clean_model_number, axis=1)
-
-
-
 
 
 #delete duplicate values with product_name + model_number
