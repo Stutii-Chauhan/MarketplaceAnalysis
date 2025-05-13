@@ -31,7 +31,7 @@ import pandas as pd
 import re
 
 # ✅ Final model number pattern – allows digit-first, multiple hyphens, dots
-MODEL_PATTERN = r'(?<!\w)([A-Z0-9]{3,15}(?:[\.\-][A-Z0-9]{1,6})*)(?!\w)'
+MODEL_PATTERN = r'(?<!\w)([A-Z0-9]{3,24}(?:[\.\-][A-Z0-9]{1,6})*)(?!\w)'
 
 # 🚫 Known bad values to exclude
 BLACKLIST = {
