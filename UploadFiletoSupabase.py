@@ -12,9 +12,9 @@ host = os.environ["SUPABASE_HOST"]
 port = os.environ["SUPABASE_PORT"]
 password = quote_plus(raw_password)
 
-assert all([db, user, raw_password, host, port]), "❌ One or more environment variables is missing!"
+assert all([db, user, raw_password, host, port]), "One or more environment variables is missing!"
 
-print("🔍 DEBUGGING ENVIRONMENT VARIABLES")
+print("DEBUGGING ENVIRONMENT VARIABLES")
 print("HOST:", host)
 print("USER:", user)
 print("DB:", db)
