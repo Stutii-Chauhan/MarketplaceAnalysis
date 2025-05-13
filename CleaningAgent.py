@@ -29,44 +29,57 @@ df.count()
 
 #Cleaning Model Number column
 
-# Define blacklist
+import re
+import pandas as pd
+
+# List of known brands that might appear in model_number
+brand_prefixes = ["EMPORIO ARMANI", "FOSSIL", "TITAN", "TIMEX", "SEIKO", "CASIO", "MICHAEL KORS", "ARMANI EXCHANGE", "TISSOT", "MOVADO"]
+
+# Lowercased blacklist terms
 blacklist = {
     "casual watch", "armani exchange watches", "combo", "premium combo",
     "combo of 2", "legacy", "bergen", "cercle kendall", "", "nan", "none"
 }
 
-# Function to extract model-like patterns from product_name
-def extract_model_from_name(name):
-    if not isinstance(name, str):
+def extract_model_number_from_string(text):
+    if not isinstance(text, str):
         return pd.NA
-    name = name.upper()
-    matches = re.findall(r'\b[A-Z]{2,5}[\d]{2,6}[A-Z0-9]*\b', name)
+    text = text.upper().strip()
+
+    # Remove brand prefixes
+    for brand in brand_prefixes:
+        if text.startswith(brand):
+            text = text.replace(brand, "").strip()
+
+    # Extract alphanumeric model pattern
+    matches = re.findall(r'\b[A-Z0-9]{3,}\b', text)
     return matches[0] if matches else pd.NA
 
-# Main cleaning function
 def clean_model_number(row):
-    model = str(row.get("model_number", "")).strip()
+    model = str(row.get("model_number", "")).strip().lower()
     part = str(row.get("part_number", "")).strip().upper()
-    product_name = str(row.get("product_name", "")).strip()
+    name = str(row.get("product_name", "")).strip()
 
-    # Step 1: Check model validity
-    if model.lower() not in blacklist and model.strip():
-        return model.upper()
+    # Step 1: model_number is valid and not blacklisted
+    if model not in blacklist and model:
+        cleaned = extract_model_number_from_string(model)
+        if pd.notna(cleaned):
+            return cleaned
 
-    # Step 2: Fallback to part number if model is bad
+    # Step 2: part_number fallback
     if part and part.lower() not in blacklist:
         return part
 
-    # Step 3: Fallback to product name
-    model_from_name = extract_model_from_name(product_name)
-    if pd.notna(model_from_name):
-        return model_from_name
+    # Step 3: extract from product_name
+    extracted = extract_model_number_from_string(name)
+    if pd.notna(extracted):
+        return extracted
 
-    # Step 4: Default to "NA"
     return "NA"
 
-# Apply logic
+# Apply to your DataFrame
 df["model_number"] = df.apply(clean_model_number, axis=1)
+
 
 
 #delete duplicate values with product_name + model_number
