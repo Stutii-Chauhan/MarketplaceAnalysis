@@ -26,7 +26,7 @@ def load_data(table_name):
 
 def render_best_sellers(gender):
     st.title(f" Best Sellers for {gender}")
-    table = "final_watch_dataset_men_output_rows" if gender == "Men" else "final_watch_dataset_women_output_rows"
+    table = "scraped_data_cleaned_men" if gender == "Men" else "scraped_data_cleaned_women"
     df = load_data(table)
 
     if "filtered_df" in st.session_state:
