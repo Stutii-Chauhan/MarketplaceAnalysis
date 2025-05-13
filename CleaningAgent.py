@@ -27,22 +27,39 @@ df = df.dropna(subset=["url"])
 df = df.dropna(subset=["price"])
 df.count()
 
+import pandas as pd
+import re
+
 # ✅ Final model number pattern – allows digit-first, hyphens, dots
-MODEL_PATTERN = r'(?<!\w)([A-Z0-9]{3,10}(?:[\.\-][A-Z0-9]{1,5})*)(?!\w)'
+MODEL_PATTERN = r'(?<!\w)([A-Z0-9]{3,15}(?:[\.\-][A-Z0-9]{1,6})*)(?!\w)'
+
+# 🚫 Known bad values to exclude
+BLACKLIST = {
+    "REGALIA", "STAINLESS", "AUTOMATICS", "COMBO", "PREMIUM", "CASUAL WATCH",
+    "", "NA", "NONE", "NAN"
+}
+
+# 🚫 Brand names to prevent accidental extraction as model numbers
+BRAND_BLACKLIST = {
+    "CASIO", "TITAN", "FOSSIL", "MATHEY", "TIMEX", "SEIKO", "CITIZEN", "RADO",
+    "TISSOT", "MOVADO", "DIESEL", "GUESS", "ESPRIT", "ALBA", "INVICTA"
+}
 
 def extract_model_number_from_text(text):
     if not isinstance(text, str) or not text.strip():
         return pd.NA
     text = text.upper()
 
-    # Split into possible tokens using "/", ",", or "or"
+    # Break into tokens using "/", ",", or "or"
     tokens = re.split(r"[\/,]| or ", text)
-
     for token in tokens:
         token = token.strip()
         match = re.search(MODEL_PATTERN, token)
         if match:
-            return match.group(1)
+            value = match.group(1)
+            if value in BRAND_BLACKLIST:  # Avoid brand names as model numbers
+                continue
+            return value
     return pd.NA
 
 def clean_model_number(row):
@@ -50,18 +67,12 @@ def clean_model_number(row):
     part = str(row.get("part_number", "")).strip().upper()
     product_name = str(row.get("product_name", "")).strip()
 
-    #  Known bad values
-    blacklist = {
-        "REGALIA", "STAINLESS", "AUTOMATICS", "COMBO", "PREMIUM", "CASUAL WATCH",
-        "", "NA", "NONE", "NAN"
-    }
-
     # Step 1: Use model_number if valid
-    if model and model not in blacklist and re.search(MODEL_PATTERN, model):
+    if model and model not in BLACKLIST and model not in BRAND_BLACKLIST and re.search(MODEL_PATTERN, model):
         return model
 
     # Step 2: Use part_number if valid
-    if part and part not in blacklist and re.search(MODEL_PATTERN, part):
+    if part and part not in BLACKLIST and part not in BRAND_BLACKLIST and re.search(MODEL_PATTERN, part):
         return part
 
     # Step 3: Extract from product_name
@@ -74,6 +85,7 @@ def clean_model_number(row):
 
 # ✅ Apply cleaning to your DataFrame
 df["model_number"] = df.apply(clean_model_number, axis=1)
+
 
 
 #delete duplicate values with product_name + model_number
