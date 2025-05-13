@@ -80,6 +80,7 @@ df["model_number"] = df.apply(clean_model_number, axis=1)
 
 
 
+
 #delete duplicate values with product_name + model_number
 df = df.drop_duplicates(subset=["product_name", "model_number"], keep="first")
 df.count()
@@ -265,6 +266,9 @@ df = df.applymap(lambda x: "NA" if str(x).strip().lower() in ["", "na", "n/a", "
 
 #drop part_number
 df.drop(columns=["part_number"], inplace=True)
+
+#as of date column
+df["As of Date"] = datetime.today().strftime("%Y-%m-%d")
 
 #saving file
 
