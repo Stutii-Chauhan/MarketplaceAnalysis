@@ -27,30 +27,27 @@ df = df.dropna(subset=["url"])
 df = df.dropna(subset=["price"])
 df.count()
 
-
 import pandas as pd
 import re
 
-# Improved pattern: allows hyphens, slashes, mixed case
-MODEL_PATTERN = r"\b[A-Z]{1,4}\d{2,8}[A-Z0-9\-]*\b"
+# Improved regex pattern: accepts dots, hyphens, and alphanumeric formats
+MODEL_PATTERN = r'\b([A-Z]{1,4}\d{2,10}[A-Z0-9\-\.]*)\b'
 
-# Extract the first valid model number from a string
 def extract_model_number_from_text(text):
     if not isinstance(text, str) or not text.strip():
         return pd.NA
     text = text.upper()
 
-    # Split by common separators (/, -, or)
+    # Split text to extract multiple options if any
     tokens = re.split(r"[\/,]| or ", text)
 
     for token in tokens:
         token = token.strip()
         match = re.search(MODEL_PATTERN, token)
         if match:
-            return match.group(0)
+            return match.group(1)
     return pd.NA
 
-# Main cleaning function with blacklist
 def clean_model_number(row):
     model = str(row.get("model_number", "")).strip().upper()
     part = str(row.get("part_number", "")).strip().upper()
@@ -61,23 +58,23 @@ def clean_model_number(row):
         "", "NA", "NONE", "NAN"
     }
 
-    # Step 1: Check model number validity
+    # Step 1: Use model if it's clean
     if model and model not in blacklist and re.fullmatch(MODEL_PATTERN, model):
         return model
 
-    # Step 2: Fallback to part number
+    # Step 2: Use part number if clean
     if part and part not in blacklist and re.fullmatch(MODEL_PATTERN, part):
         return part
 
-    # Step 3: Fallback to product name
+    # Step 3: Extract from product name
     model_from_name = extract_model_number_from_text(product_name)
     if pd.notna(model_from_name):
         return model_from_name
 
-    # Step 4: Final fallback
+    # Step 4: Fallback
     return "NA"
 
-# Apply to DataFrame
+# Apply to your DataFrame
 df["model_number"] = df.apply(clean_model_number, axis=1)
 
 
