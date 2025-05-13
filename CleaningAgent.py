@@ -71,7 +71,14 @@ df = df.drop_duplicates(subset=["product_name", "model_number"], keep="first")
 df.count()
 
 #price cleaning
-df["price"] = df["price"].astype(float).round(2)
+df["Price"] = (
+    df["Price"]
+    .str.replace(",", "")                   # Remove commas
+    .str.replace(r"\.$", "", regex=True)   # Remove trailing dot if exists
+    .astype(float)
+    .round(2)
+)
+df = df[df["Price"] >= 10000] #removing products with price < 10000
 df = df[df["price"] >= 10000]
 df.count()
 
