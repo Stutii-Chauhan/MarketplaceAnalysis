@@ -148,7 +148,7 @@ def render_best_sellers(gender):
                                         <b>Brand:</b> {row.get('brand', 'N/A')}<br>
                                         <b>Model:</b> {row.get('model_number', 'N/A')}<br>
                                         <b>Price:</b> ₹{int(row['price'])}<br>
-                                        <b>Rating:</b> {round(row['ratings'], 1) if pd.notna(row['ratings']) else "N/A"}/5<br>
+                                        <b>Rating:</b> {round(row['rating(out_of_5)'], 1) if pd.notna(row['rating(out_of_5)']) else "N/A"}/5<br>
                                         <b>Discount:</b> {
                                             "No" if pd.notna(row["discount"]) and row["discount"] in ["0", "0.0"]
                                             else row["discount"] if pd.notna(row["discount"])
