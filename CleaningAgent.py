@@ -244,17 +244,21 @@ def infer_gender(product_name):
         return "Unisex"
 df["gender"] = df["product_name"].apply(infer_gender)
 
-# Strip '.html', convert to int, sort
-# Step 1: Remove '.html'
+#replace Nulls etc with "NA"
+
+df = df.replace({np.nan: "NA"})
+df = df.applymap(lambda x: "NA" if str(x).strip().lower() in ["", "na", "n/a", "none", "null", "nan", "n.a."] else x)
+
+#drop part_number
+df.drop(columns=["part_number"], inplace=True)
+
+#saving file
+
 df['file'] = df['file'].astype(str).str.replace('.html', '', regex=False)
-
-# Step 2: Convert to integer
 df['file'] = df['file'].astype(int)
-
-# Step 3: Sort numerically
 df = df.sort_values(by='file')
 
-# Step 4: Upload to Supabase
+#Upload to Supabase
 df.to_sql("scraped_data_cleaned", con=engine, if_exists="replace", index=False)
 
 
