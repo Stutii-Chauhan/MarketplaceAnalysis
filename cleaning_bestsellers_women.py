@@ -163,11 +163,11 @@ df["price_band"] = pd.cut(
 df["discount_(%)"] = (
     df["discount_(%)"]
     .astype(str)
-    .str.extract(r"(\d+\.?\d*)")[0]         # extract numeric part
+    .str.extract(r"(\d+\.?\d*)")[0]  # Extract just the numeric part
     .replace("", np.nan)
-    .astype(float)
-    .map(lambda x: f"{int(x)}%" if x.is_integer() else f"{x}%" if pd.notna(x) else np.nan)
+    .astype(float)                  # Keep it float
 )
+df["discount_(%)"] = df["discount_(%)"].fillna(0.0)
 
 #----------------------------------------------------------------
 
