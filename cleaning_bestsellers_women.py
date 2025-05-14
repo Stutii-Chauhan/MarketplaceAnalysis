@@ -376,4 +376,4 @@ df['file'] = df['file'].astype(int)
 df = df.sort_values(by='file')
 
 #Upload to Supabase
-df.to_sql("ratingcheck", con=engine, if_exists="replace", index=False)
+df.to_sql("scraped_data_cleaned_women", con=engine, if_exists="replace", index=False)
