@@ -5,11 +5,11 @@ on:
   push:
     paths:
       - "CleaningAgent.py"
+      - "cleaning_bestsellers_men.py"
+      - "cleaning_bestsellers_women.py"
 
 jobs:
   upload:
-    # REMOVE THIS FOR TESTING
-    # if: github.event_name == 'push' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
 
     steps:
@@ -27,6 +27,24 @@ jobs:
 
       - name: Run Cleaning Step 1
         run: python CleaningAgent.py
+        env:
+          SUPABASE_DB: ${{ secrets.SUPABASE_DB }}
+          SUPABASE_USER: ${{ secrets.SUPABASE_USER }}
+          SUPABASE_PASSWORD: ${{ secrets.SUPABASE_PASSWORD }}
+          SUPABASE_HOST: ${{ secrets.SUPABASE_HOST }}
+          SUPABASE_PORT: ${{ secrets.SUPABASE_PORT }}
+
+      - name: Run Cleaning Bestsellers Men
+        run: python cleaning_bestsellers_men.py
+        env:
+          SUPABASE_DB: ${{ secrets.SUPABASE_DB }}
+          SUPABASE_USER: ${{ secrets.SUPABASE_USER }}
+          SUPABASE_PASSWORD: ${{ secrets.SUPABASE_PASSWORD }}
+          SUPABASE_HOST: ${{ secrets.SUPABASE_HOST }}
+          SUPABASE_PORT: ${{ secrets.SUPABASE_PORT }}
+
+      - name: Run Cleaning Bestsellers Women
+        run: python cleaning_bestsellers_women.py
         env:
           SUPABASE_DB: ${{ secrets.SUPABASE_DB }}
           SUPABASE_USER: ${{ secrets.SUPABASE_USER }}
