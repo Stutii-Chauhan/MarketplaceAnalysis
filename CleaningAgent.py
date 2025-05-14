@@ -9,18 +9,13 @@ from datetime import datetime
 # ------------------------------------
 # DB Setup
 # ------------------------------------
-db = os.environ["SUPABASE_DB"]
-user = os.environ["SUPABASE_USER"]
-raw_password = os.environ["SUPABASE_PASSWORD"]
-host = os.environ["SUPABASE_HOST"]
-port = os.environ["SUPABASE_PORT"]
-password = quote_plus(raw_password)
+# Get full connection string from env
+DATABASE_URL = os.environ["RAILWAY_DB_URL"]
+engine = create_engine(DATABASE_URL)
 
-engine = create_engine(f"postgresql://{user}:{password}@{host}:{port}/{db}")
-
-#read the table
+# Read the table from Railway DB
 df = pd.read_sql_table("final_watch_data_cleaned", con=engine)
-df.count()
+print(df.count())
 
 #delete rows with NaN/blank in url column and also in the price Column.
 df = df.dropna(subset=["url"])
