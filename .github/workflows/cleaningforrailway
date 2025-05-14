@@ -5,8 +5,6 @@ on:
   push:
     paths:
       - "CleaningAgent.py"
-      - "cleaning_bestsellers_men.py"
-      - "cleaning_bestsellers_women.py"
 
   workflow_run:
     workflows: ["Upload to Railway"]
@@ -36,12 +34,3 @@ jobs:
         env:
           RAILWAY_DB_URL: ${{ secrets.RAILWAY_DB_URL }}
 
-      - name: Run Cleaning Step 2
-        run: python cleaning_bestsellers_men.py
-        env:
-          RAILWAY_DB_URL: ${{ secrets.RAILWAY_DB_URL }}
-
-      - name: Run Cleaning Step 3
-        run: python cleaning_bestsellers_women.py
-        env:
-          RAILWAY_DB_URL: ${{ secrets.RAILWAY_DB_URL }}
