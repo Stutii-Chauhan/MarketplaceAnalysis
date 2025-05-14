@@ -27,17 +27,13 @@ df = df.dropna(subset=["url"])
 df = df.dropna(subset=["price"])
 df.count()
 
+#Cleaning Model Number 
 
-# ✅ Final model number pattern – allows digit-first, multiple hyphens, dots
 MODEL_PATTERN = r'(?<!\w)([A-Z0-9]{3,24}(?:[\.\-][A-Z0-9]{1,6})*)(?!\w)'
-
-# 🚫 Known bad values to exclude
 BLACKLIST = {
     "REGALIA", "STAINLESS", "AUTOMATICS", "COMBO", "PREMIUM", "CASUAL WATCH", "ANALOG",
     "", "NA", "NONE", "NAN"
 }
-
-# 🚫 Brand names to prevent accidental extraction as model numbers
 BRAND_BLACKLIST = {
     "CASIO", "TITAN", "FOSSIL", "MATHEY", "TIMEX", "SEIKO", "CITIZEN", "RADO",
     "TISSOT", "MOVADO", "DIESEL", "GUESS", "ESPRIT", "ALBA", "INVICTA"
@@ -64,46 +60,35 @@ def clean_model_number(row):
     part = str(row.get("part_number", "")).strip().upper()
     product_name = str(row.get("product_name", "")).strip()
 
-    # Step 1: Use model_number if valid
     if model and model not in BLACKLIST and model not in BRAND_BLACKLIST and re.search(MODEL_PATTERN, model):
         return model
 
-    # Step 2: Use part_number if valid
     if part and part not in BLACKLIST and part not in BRAND_BLACKLIST and re.search(MODEL_PATTERN, part):
         return part
 
-    # Step 3: Extract from product_name
     model_from_name = extract_model_number_from_text(product_name)
     if pd.notna(model_from_name):
         return model_from_name
 
-    # Step 4: Fallback
     return "NA"
 
-# ✅ Apply cleaning to your DataFrame
 df["model_number"] = df.apply(clean_model_number, axis=1)
 
-import re
-
+#Post update check on model_number
 def extract_pure_model_number(val):
     if pd.isna(val):
         return "NA"
 
     val = str(val).strip().upper()
 
-    # Extract model pattern: e.g., AR11588, FS6012, AX2430, 1688KM07
     match = re.findall(r'\b[A-Z]{1,4}[\d]{2,}[A-Z\d\-]*\b', val)
-
-    # If found, return last valid-looking part (often the actual model number)
     if match:
         return match[-1]
     
     return "NA"
 df["model_number"] = df["model_number"].apply(extract_pure_model_number)
 
-# # ✨ Apply post-cleaning to keep only model pattern
-# df["model_number"] = df["model_number"].apply(retain_only_model_number)
-
+#--------------------------------------------------------------------------------
 
 #delete duplicate values with product_name + model_number
 df = df.drop_duplicates(subset=["product_name", "model_number"], keep="first")
