@@ -11,7 +11,7 @@ HOST = st.secrets["SUPABASE_HOST"]
 PORT = st.secrets["SUPABASE_PORT"]
 # engine = create_engine(f"postgresql://{USER}:{PASSWORD}@{HOST}:{PORT}/{DB}")
 engine = create_engine(
-    f"postgresql://{user}:{password}@{host}:{port}/{db}",
+    f"postgresql://{USER}:{PASSWORD}@{HOST}:{PORT}/{DB}",
     connect_args={"client_encoding": "utf8"}
 )
 
