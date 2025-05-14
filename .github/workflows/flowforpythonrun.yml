@@ -31,14 +31,14 @@ jobs:
         run: |
           pip install pandas sqlalchemy psycopg2-binary openpyxl
 
-      - name: Upload raw data to Supabase
-        run: python UploadFiletoSupabase.py
-        env:
-          SUPABASE_DB: ${{ secrets.SUPABASE_DB }}
-          SUPABASE_USER: ${{ secrets.SUPABASE_USER }}
-          SUPABASE_PASSWORD: ${{ secrets.SUPABASE_PASSWORD }}
-          SUPABASE_HOST: ${{ secrets.SUPABASE_HOST }}
-          SUPABASE_PORT: ${{ secrets.SUPABASE_PORT }}
+      # - name: Upload raw data to Supabase
+      #   run: python UploadFiletoSupabase.py
+      #   env:
+      #     SUPABASE_DB: ${{ secrets.SUPABASE_DB }}
+      #     SUPABASE_USER: ${{ secrets.SUPABASE_USER }}
+      #     SUPABASE_PASSWORD: ${{ secrets.SUPABASE_PASSWORD }}
+      #     SUPABASE_HOST: ${{ secrets.SUPABASE_HOST }}
+      #     SUPABASE_PORT: ${{ secrets.SUPABASE_PORT }}
 
       - name: Run Cleaning Step 1
         run: python CleaningAgent.py
