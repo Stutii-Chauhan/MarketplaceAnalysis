@@ -29,6 +29,12 @@ def load_data(table_name):
         )
     return df
 
+def clean_filter_options(series):
+    return sorted([
+        val for val in series.dropna().unique()
+        if str(val).strip().upper() not in ["NA", "N/A", "NONE", ""]
+    ])
+
 def render_best_sellers(gender):
     st.title(f" Best Sellers for {gender}")
     table = "scraped_data_cleaned_men" if gender == "Men" else "scraped_data_cleaned_women"
@@ -54,26 +60,32 @@ def render_best_sellers(gender):
 
     # 3. Brand
     df["brand"] = df["brand"].str.strip().str.lower().str.title()
+    valid_brands = clean_filter_options(df["brand"])
     selected_brands = st.sidebar.multiselect("Brand", sorted(df["brand"].dropna().unique()))
 
     # 4. Dial Colour
     df["dial_colour"] = df["dial_colour"].str.strip().str.lower().str.title()
+    valid_brands = clean_filter_options(df["dial_colour"])
     selected_dialcol = st.sidebar.multiselect("Dial Colour", sorted(df["dial_colour"].dropna().unique()))
 
     # 5. Dial Shape
     df["case_shape"] = df["case_shape"].str.strip().str.lower().str.title()
+    valid_brands = clean_filter_options(df["dial_shape"])
     selected_dialshape = st.sidebar.multiselect("Dial Shape", sorted(df["case_shape"].dropna().unique()))
     
     # 6. Band Colour
     df["band_colour"] = df["band_colour"].str.strip().str.lower().str.title()
+    valid_brands = clean_filter_options(df["band_colour"])
     selected_bandcol = st.sidebar.multiselect("Band Colour", sorted(df["band_colour"].dropna().unique()))
 
     # 7. Band Material
     df["band_material"] = df["band_material"].str.strip().str.lower().str.title()
+    valid_brands = clean_filter_options(df["band_material"])
     selected_bandmaterial = st.sidebar.multiselect("Band Material", sorted(df["band_material"].dropna().unique()))
 
     # 8. Movement
     df["movement"] = df["movement"].str.strip().str.lower().str.title()
+    valid_brands = clean_filter_options(df["movement"])
     selected_movement = st.sidebar.multiselect("Movement", sorted(df["movement"].dropna().unique()))
     
 
