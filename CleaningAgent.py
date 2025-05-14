@@ -83,12 +83,23 @@ def clean_model_number(row):
 # ✅ Apply cleaning to your DataFrame
 df["model_number"] = df.apply(clean_model_number, axis=1)
 
-# def retain_only_model_number(text):
-#     if not isinstance(text, str):
-#         return text
-#     text = text.upper()
-#     match = re.search(MODEL_PATTERN, text)
-#     return match.group(1) if match else text
+import re
+
+def extract_pure_model_number(val):
+    if pd.isna(val):
+        return "NA"
+
+    val = str(val).strip().upper()
+
+    # Extract model pattern: e.g., AR11588, FS6012, AX2430, 1688KM07
+    match = re.findall(r'\b[A-Z]{1,4}[\d]{2,}[A-Z\d\-]*\b', val)
+
+    # If found, return last valid-looking part (often the actual model number)
+    if match:
+        return match[-1]
+    
+    return "NA"
+df["model_number"] = df["model_number"].apply(extract_pure_model_number)
 
 # # ✨ Apply post-cleaning to keep only model pattern
 # df["model_number"] = df["model_number"].apply(retain_only_model_number)
