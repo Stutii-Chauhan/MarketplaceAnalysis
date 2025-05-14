@@ -134,10 +134,11 @@ df.count()
 df["rating(out_of_5)"] = (
     df["rating(out_of_5)"]
     .astype(str)
-    .str.extract(r"(\d+\.?\d*)")[0]     # extract numeric part
-    .astype(float)                      # ensure it's float
-    .round(1)                           # optional: round to 1 decimal
+    .str.extract(r"(\d+\.?\d*)")[0]  # extract numeric part only
+    .astype(float)
+    .round(1)
 )
+
 #----------------------------------------------------------------
 
 #adding price_band
@@ -366,4 +367,4 @@ df['file'] = df['file'].astype(int)
 df = df.sort_values(by='file')
 
 #Upload to Supabase
-df.to_sql("check", con=engine, if_exists="replace", index=False)
+df.to_sql("ratings", con=engine, if_exists="replace", index=False)
