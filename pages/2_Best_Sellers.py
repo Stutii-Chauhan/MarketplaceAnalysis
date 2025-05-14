@@ -9,7 +9,12 @@ USER = st.secrets["SUPABASE_USER"]
 PASSWORD = quote_plus(st.secrets["SUPABASE_PASSWORD"])
 HOST = st.secrets["SUPABASE_HOST"]
 PORT = st.secrets["SUPABASE_PORT"]
-engine = create_engine(f"postgresql://{USER}:{PASSWORD}@{HOST}:{PORT}/{DB}")
+# engine = create_engine(f"postgresql://{USER}:{PASSWORD}@{HOST}:{PORT}/{DB}")
+engine = create_engine(
+    f"postgresql://{user}:{password}@{host}:{port}/{db}",
+    connect_args={"client_encoding": "utf8"}
+)
+
 
 @st.cache_data(ttl=600)
 def load_data(table_name):
