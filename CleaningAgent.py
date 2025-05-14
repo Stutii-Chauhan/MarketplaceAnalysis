@@ -23,7 +23,7 @@ df = df.dropna(subset=["price"])
 df.count()
 
 #------------------------------------------------------------------------------------------
-Cleaning Model Number 
+#Cleaning Model Number 
 
 MODEL_PATTERN = r'(?<!\w)([A-Z0-9]{3,24}(?:[\.\-][A-Z0-9]{1,6})*)(?!\w)'
 BLACKLIST = {
