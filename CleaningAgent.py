@@ -77,18 +77,18 @@ def clean_model_number(row):
 df["model_number"] = df.apply(clean_model_number, axis=1)
 
 #Post update check on model_number
-def extract_pure_model_number(val):
-    if pd.isna(val):
-        return "NA"
+# def extract_pure_model_number(val):
+#     if pd.isna(val):
+#         return "NA"
 
-    val = str(val).strip().upper()
+#     val = str(val).strip().upper()
 
-    match = re.findall(r'\b[A-Z]{1,4}[\d]{2,}[A-Z\d\-]*\b', val)
-    if match:
-        return match[-1]
+#     match = re.findall(r'\b[A-Z]{1,4}[\d]{2,}[A-Z\d\-]*\b', val)
+#     if match:
+#         return match[-1]
     
-    return "NA"
-df["model_number"] = df["model_number"].apply(extract_pure_model_number)
+#     return "NA"
+# df["model_number"] = df["model_number"].apply(extract_pure_model_number)
 
 #-------------------------------------------------------------------------------
 
