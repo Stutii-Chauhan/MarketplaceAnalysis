@@ -127,7 +127,7 @@ def render_best_sellers(gender):
                         # Skip any row with essential nulls (safety check)
                         if pd.isna(row["product_name"]) or pd.isna(row["url"]) or pd.isna(row["imageurl"]) or pd.isna(row["price"]):
                             continue
-    
+
                         with cols[j]:
                             st.markdown(
                                 f"""
@@ -135,10 +135,12 @@ def render_best_sellers(gender):
                                             box-shadow:0 2px 10px rgba(0,0,0,0.05); height:540px;
                                             background-color:white; display:flex; flex-direction:column;
                                             justify-content:space-between; width:100%;">
-                                    <div style='text-align:center'>
+                                    
+                                    <div style="text-align:center; margin-bottom:15px;">
                                         <a href="{row['url']}" target="_blank">
-                                            <img src="{row['imageurl']}"style="height:250px; width:250px; object-fit:cover; object-position:center; display:block; margin:auto;"/>
-
+                                            <img src="{row['imageurl']}"
+                                                 style="height:250px; width:250px; object-fit:cover;
+                                                        object-position:center; display:block; margin:auto;" />
                                         </a>
                                     </div>
                                     <div style="font-weight:600; font-size:1rem; margin-bottom:10px;
