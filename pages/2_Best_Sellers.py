@@ -138,7 +138,7 @@ def render_best_sellers(gender):
                                             justify-content:space-between; width:100%;">
                                     <div style='text-align:center'>
                                         <a href="{row['url']}" target="_blank">
-                                            <img src="{row['imageurl']}" style="height:250px; width:250px; object-fit:contain; margin:auto; margin-bottom:15px;"/>
+                                            <img src="{row['imageurl']}" style="height:250px; width:250px; object-fit:contain; object-position:center;display:block; margin:auto; margin-bottom:15px;"/>
                                         </a>
                                     </div>
                                     <div style="font-weight:600; font-size:1rem; margin-bottom:10px;
@@ -155,9 +155,8 @@ def render_best_sellers(gender):
                                         <b>Model:</b> {row.get('model_number', 'N/A')}<br>
                                         <b>Price:</b> ₹{int(row['price'])}<br>
                                         <b>Rating:</b> {
-                                            f"{round(float(row['rating(out_of_5)']), 1)}"
-                                            if pd.notna(row['rating(out_of_5)']) and str(row['rating(out_of_5)']).replace('.', '', 1).isdigit()
-                                            else "N/A"
+                                            int(float(row['rating(out_of_5)'])) if float(row['rating(out_of_5)']).is_integer()
+                                            else round(float(row['rating(out_of_5)']), 1)
                                         }/5<br>
                                         <b>Discount:</b> {
                                             "No" if pd.notna(row["discount_(%)"]) and row["discount_(%)"] in ["0", "0.0"]
