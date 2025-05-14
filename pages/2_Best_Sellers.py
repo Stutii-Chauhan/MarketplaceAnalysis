@@ -31,7 +31,7 @@ def load_data(table_name):
 
 def render_best_sellers(gender):
     st.title(f" Best Sellers for {gender}")
-    table = "scraped_data_cleaned_men" if gender == "Men" else "scraped_data_cleaned_women"
+    table = "scraped_data_cleaned_men" if gender == "Men" else "checkforwomen"
     df = load_data(table)
     st.write(f"✅ Loaded {df.shape[0]} records from {table}")
 
