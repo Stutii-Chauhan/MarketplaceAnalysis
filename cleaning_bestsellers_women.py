@@ -26,9 +26,9 @@ df.count()
 #----------------------------------------------------------------
 
 #delete rows with NaN/blank in url column and also in the price Column.
-# df = df.dropna(subset=["url"])
-# df = df.dropna(subset=["price"])
-# df.count()
+df = df.dropna(subset=["url"])
+df = df.dropna(subset=["price"])
+df.count()
 
 #----------------------------------------------------------------
 
