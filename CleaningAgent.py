@@ -314,6 +314,10 @@ def categorize_titan(row):
     brand = str(row["brand"]).strip().title()
     product = str(row["product_name"]).strip().title()
 
+    # Direct rename if brand is "Xylys"
+    if brand == "Xylys":
+        return "Titan Xylys"
+
     if brand == "Titan":
         if "Xylys" in product:
             return "Titan Xylys"
@@ -323,6 +327,7 @@ def categorize_titan(row):
             return "Titan Raga"
         else:
             return "Titan"
+
     return brand
 
 df["brand"] = df.apply(categorize_titan, axis=1)
@@ -340,6 +345,22 @@ def infer_gender(product_name):
     else:
         return "Unisex"
 df["gender"] = df["product_name"].apply(infer_gender)
+
+#Cleaning Special Features
+
+def clean_special_features(text):
+    if not isinstance(text, str):
+        return text
+    
+    # Replace semicolons with commas
+    text = text.replace(";", ",")
+
+    # Capitalize each word (first letter after space)
+    text = " ".join(word.capitalize() for word in text.split())
+    
+    return text
+
+df["special_features"] = df["special_features"].apply(clean_special_features)
 
 #replace Nulls etc with "NA"
 
