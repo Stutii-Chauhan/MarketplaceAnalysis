@@ -70,7 +70,7 @@ def render_best_sellers(gender):
 
     # 5. Dial Shape
     df["case_shape"] = df["case_shape"].str.strip().str.lower().str.title()
-    valid_brands = clean_filter_options(df["dial_shape"])
+    valid_brands = clean_filter_options(df["case_shape"])
     selected_dialshape = st.sidebar.multiselect("Dial Shape", sorted(df["case_shape"].dropna().unique()))
     
     # 6. Band Colour
