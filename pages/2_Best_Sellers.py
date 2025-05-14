@@ -191,17 +191,14 @@ def render_best_sellers(gender):
         # --- Pagination Controls ---
         st.markdown("<br>", unsafe_allow_html=True)
         
-        # Set up session state to track clicked page if not present
-        if "clicked_page" not in st.session_state:
-            st.session_state.clicked_page = None
-        
         with st.form("pagination_form", clear_on_submit=True):
             col1, col2, col3 = st.columns([1, 8, 1])
+            clicked_page = None
         
             with col1:
                 if st.session_state.page_number > 1:
                     if st.form_submit_button("⬅️ Prev"):
-                        st.session_state.clicked_page = st.session_state.page_number - 1
+                        st.session_state.page_number -= 1
         
             with col2:
                 current = st.session_state.page_number
@@ -229,21 +226,12 @@ def render_best_sellers(gender):
                         button_cols[idx].form_submit_button(f"• {p} •", disabled=True)
                     else:
                         if button_cols[idx].form_submit_button(str(p)):
-                            st.session_state.clicked_page = p
+                            st.session_state.page_number = p
         
             with col3:
                 if st.session_state.page_number < total_pages:
                     if st.form_submit_button("Next ➡️"):
-                        st.session_state.clicked_page = st.session_state.page_number + 1
-        
-            # Main form submit button (invisible, just triggers state update)
-            st.form_submit_button("🔁 Apply")
-        
-        # After form: update page number
-        if st.session_state.clicked_page:
-            st.session_state.page_number = st.session_state.clicked_page
-            st.session_state.clicked_page = None
-
+                        st.session_state.page_number += 1
 
 
 # ---- Main UI ----
