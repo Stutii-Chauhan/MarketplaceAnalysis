@@ -131,12 +131,22 @@ df.count()
 #----------------------------------------------------------------
 
 #cleaning ratings
-df["rating(out_of_5)"] = (
-    df["rating(out_of_5)"]
-    .str.extract(r"(\d+\.?\d*)")        # extract only the numeric part
-    .astype(float)
-    .map(lambda x: int(x) if pd.notna(x) and x.is_integer() else round(x, 1) if pd.notna(x) else np.nan)
-)
+def extract_custom_rating(text):
+    if not isinstance(text, str):
+        return np.nan
+
+    matches = re.findall(r"\d+", text)  # Find all numbers
+    if len(matches) >= 2:
+        return float(f"{matches[0]}.{matches[1]}")
+    elif len(matches) == 1:
+        return float(matches[0])
+    return np.nan
+
+# Apply extraction
+df["rating(out_of_5)"] = df["rating(out_of_5)"].apply(extract_custom_rating)
+
+# ✅ Replace NaN with 0.0 instead of "NA"
+df["rating(out_of_5)"] = df["rating(out_of_5)"].fillna(0.0)
 
 #----------------------------------------------------------------
 
@@ -153,11 +163,11 @@ df["price_band"] = pd.cut(
 df["discount_(%)"] = (
     df["discount_(%)"]
     .astype(str)
-    .str.extract(r"(\d+\.?\d*)")[0]         # extract numeric part
+    .str.extract(r"(\d+\.?\d*)")[0]  # Extract just the numeric part
     .replace("", np.nan)
-    .astype(float)
-    .map(lambda x: f"{int(x)}%" if x.is_integer() else f"{x}%" if pd.notna(x) else np.nan)
+    .astype(float)                  # Keep it float
 )
+df["discount_(%)"] = df["discount_(%)"].fillna(0.0)
 
 #----------------------------------------------------------------
 
@@ -185,16 +195,12 @@ df["case_thickness"] = df["case_thickness"].apply(normalize_to_mm)
 #----------------------------------------------------------------
 # cleaning model year
 def clean_model_year(value):
-    if pd.isna(value):
-        return "NA"
     try:
-        # Convert to float first, then to int to remove .0, finally to string
-        return str(int(float(value)))
+        # Remove decimals like 2020.0 → 2020
+        return int(float(value))
     except:
-        return "NA"
-
-# Apply to your column
-df["model_year"] = df["model_year"].apply(clean_model_year)
+        return 0  # Use 0 instead of "NA" to keep it numeric
+df["model_year"] = df["model_year"].apply(clean_model_year).astype(int)
 
 #----------------------------------------------------------------
 
