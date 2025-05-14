@@ -81,8 +81,7 @@ df["model_number"] = df.apply(clean_model_number, axis=1)
 # # Define common prefix patterns to strip
 MODEL_PREFIXES = [
     "WATCH-", "WATCH_", "WATCH:", "MEN-", "WOMEN-", "FOSSIL ", "EMPORIO ARMANI ", "TSAR BOMBA-", "DIESEL ",
-    "MICHAEL KORS ", "MICHAEL-KORS ", "TOMMY HILFIGER ", "TISSOT ",
-    "INVICTA-", "ARMANI EXCHANGE "
+    "MICHAEL KORS ", "MICHAEL-KORS ", "TOMMY HILFIGER ", "TISSOT ", "MODEL: ", "MODEL:", "INVICTA-", "ARMANI EXCHANGE "
 ]
 
 def strip_prefixes_from_model_number(text):
@@ -211,6 +210,10 @@ df["band_width"] = df["band_width"].apply(normalize_to_mm)
 df["case_diameter"] = df["case_diameter"].apply(normalize_to_mm)
 df["case_thickness"] = df["case_thickness"].apply(normalize_to_mm)
 
+
+# Convert model_year to integer
+df["model_year"] = pd.to_numeric(df["model_year"], errors="coerce").astype("Int64")
+
 #removing the unwanted keywords
 unwanted_keywords = ["pocket watch", "repair tool", "watch bezel", "watch band", "tool", "watch winder", "watch case"]
 df = df[~df["product_name"].str.lower().str.contains('|'.join(unwanted_keywords))]
@@ -219,6 +222,7 @@ df.count()
 
 #filling major brand names for the products where brand name is missing
 
+# Your brand mapping dictionary
 brand_map = {
     "tommy hilfiger": "Tommy Hilfiger",
     "tommy": "Tommy Hilfiger",
@@ -275,27 +279,24 @@ brand_map = {
     "gc": "GC"
 }
 
-# Lowercase version of product names for pattern matching
-df["__product_lower__"] = df["product_name"].str.lower()
+# Fill missing brand using product_name
+def infer_brand(row):
+    brand = str(row.get("brand", "")).strip().lower()
+    product_name = str(row.get("product_name", "")).lower()
 
-# Temporary brand match column (explicitly set as object type to store strings)
-df["__brand_match__"] = pd.Series([np.nan] * len(df), dtype="object")
+    # If brand is already valid, return as-is
+    if brand and brand != "nan" and brand != "na":
+        return row["brand"].strip().title()
 
-# Match brand keywords to update missing brand values
-for keyword, clean_brand in brand_map.items():
-    pattern = rf"\b{re.escape(keyword)}\b"
-    mask = df["brand"].isna() & df["__product_lower__"].str.contains(pattern, regex=True, na=False)
-    df.loc[mask, "__brand_match__"] = clean_brand
+    # Infer from product name
+    for keyword, mapped_brand in brand_map.items():
+        if keyword in product_name:
+            return mapped_brand
 
-# Fill missing brand values with matched brands
-df["brand"] = df["brand"].fillna(df["__brand_match__"])
+    return "NA"
 
-# Still missing? Mark as "NA"
-df["brand"] = df["brand"].fillna("NA")
-
-# Drop helper columns
-df.drop(columns=["__product_lower__", "__brand_match__"], inplace=True)
-
+# Apply to DataFrame
+df["brand"] = df.apply(infer_brand, axis=1)
 
 #Dividing Titan as Titan, Xylys, Edge and Raga
 def categorize_titan(row):
