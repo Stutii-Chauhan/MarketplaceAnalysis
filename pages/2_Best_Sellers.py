@@ -42,52 +42,51 @@ def render_best_sellers(gender):
 
     if "filtered_df" in st.session_state:
         render_results(st.session_state.filtered_df)
-    
+
     st.sidebar.header("Filter Products")
 
-    # 1. price Band (Checkboxes)
-    st.sidebar.markdown("**price Band**")
+    # 1. Price Band (Checkboxes)
+    st.sidebar.markdown("**Price Band**")
     df["price_band"] = df["price_band"].str.strip().str.upper()
-    price_band_options = sorted(df["price_band"].dropna().unique())
+    price_band_options = clean_filter_options(df["price_band"])
     selected_priceband = []
     for band in price_band_options:
         if st.sidebar.checkbox(band, key=f"price_band_{band}"):
             selected_priceband.append(band)
 
-    # 2. price Range Slider
+    # 2. Price Range Slider
     price_min, price_max = int(df["price"].min()), int(df["price"].max())
-    selected_price = st.sidebar.slider("price Range", price_min, price_max, (price_min, price_max))
+    selected_price = st.sidebar.slider("Price Range", price_min, price_max, (price_min, price_max))
 
     # 3. Brand
     df["brand"] = df["brand"].str.strip().str.lower().str.title()
     valid_brands = clean_filter_options(df["brand"])
-    selected_brands = st.sidebar.multiselect("Brand", sorted(df["brand"].dropna().unique()))
+    selected_brands = st.sidebar.multiselect("Brand", valid_brands)
 
     # 4. Dial Colour
     df["dial_colour"] = df["dial_colour"].str.strip().str.lower().str.title()
-    valid_brands = clean_filter_options(df["dial_colour"])
-    selected_dialcol = st.sidebar.multiselect("Dial Colour", sorted(df["dial_colour"].dropna().unique()))
+    valid_dialcol = clean_filter_options(df["dial_colour"])
+    selected_dialcol = st.sidebar.multiselect("Dial Colour", valid_dialcol)
 
     # 5. Dial Shape
     df["case_shape"] = df["case_shape"].str.strip().str.lower().str.title()
-    valid_brands = clean_filter_options(df["case_shape"])
-    selected_dialshape = st.sidebar.multiselect("Dial Shape", sorted(df["case_shape"].dropna().unique()))
-    
+    valid_dialshape = clean_filter_options(df["case_shape"])
+    selected_dialshape = st.sidebar.multiselect("Dial Shape", valid_dialshape)
+
     # 6. Band Colour
     df["band_colour"] = df["band_colour"].str.strip().str.lower().str.title()
-    valid_brands = clean_filter_options(df["band_colour"])
-    selected_bandcol = st.sidebar.multiselect("Band Colour", sorted(df["band_colour"].dropna().unique()))
+    valid_bandcol = clean_filter_options(df["band_colour"])
+    selected_bandcol = st.sidebar.multiselect("Band Colour", valid_bandcol)
 
     # 7. Band Material
     df["band_material"] = df["band_material"].str.strip().str.lower().str.title()
-    valid_brands = clean_filter_options(df["band_material"])
-    selected_bandmaterial = st.sidebar.multiselect("Band Material", sorted(df["band_material"].dropna().unique()))
+    valid_bandmaterial = clean_filter_options(df["band_material"])
+    selected_bandmaterial = st.sidebar.multiselect("Band Material", valid_bandmaterial)
 
     # 8. Movement
     df["movement"] = df["movement"].str.strip().str.lower().str.title()
-    valid_brands = clean_filter_options(df["movement"])
-    selected_movement = st.sidebar.multiselect("Movement", sorted(df["movement"].dropna().unique()))
-    
+    valid_movement = clean_filter_options(df["movement"])
+    selected_movement = st.sidebar.multiselect("Movement", valid_movement)
 
     # Apply filters
     filtered_df = df.copy()
