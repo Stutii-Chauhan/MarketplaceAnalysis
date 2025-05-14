@@ -169,7 +169,7 @@ def render_best_sellers(gender):
                                             (
                                                 int(rating) if float(rating).is_integer()
                                                 else round(float(rating), 1)
-                                            ) if pd.notna((rating := row.get("rating(out_of_5)"))) and str(rating).replace('.', '', 1).isdigit()
+                                            ) if pd.notna((rating := row.get("rating(out_of_5)"))) and str(rating).replace(".", "", 1).isdigit()
                                             else "N/A"
                                         }/5<br>
                                         <b>Discount:</b> {
