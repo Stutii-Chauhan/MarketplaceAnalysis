@@ -357,7 +357,7 @@ df.drop(columns=["part_number"], inplace=True)
 #as of date column
 df["As of Date"] = datetime.today().strftime("%Y-%m-%d")
 
-#----------------------------------------------------------------
+#-----------------------------------------------------------------
 
 #saving file
 
