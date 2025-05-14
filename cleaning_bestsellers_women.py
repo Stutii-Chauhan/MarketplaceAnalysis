@@ -131,13 +131,24 @@ df.count()
 #----------------------------------------------------------------
 #cleaning ratings
 
-df["rating(out_of_5)"] = (
-    df["rating(out_of_5)"]
-    .astype(str)
-    .str.extract(r"(\d+\.?\d*)")[0]  # extract numeric part only
-    .astype(float)
-    .round(1)
-)
+def extract_custom_rating(text):
+    if not isinstance(text, str):
+        return np.nan
+
+    matches = re.findall(r"\d+", text)  # Find all numeric components
+    if len(matches) >= 2:
+        try:
+            return float(f"{matches[0]}.{matches[1]}")
+        except:
+            return np.nan
+    elif len(matches) == 1:
+        return float(matches[0])
+    else:
+        return np.nan
+
+df["rating(out_of_5)"] = df["rating(out_of_5)"].apply(extract_custom_rating)
+
+
 
 #----------------------------------------------------------------
 
