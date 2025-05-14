@@ -88,16 +88,22 @@ MODEL_PREFIXES = [
 def strip_prefixes_from_model_number(text):
     if not isinstance(text, str):
         return text
-    text = text.upper().strip()
-    
-    # Remove any of the known prefixes
+    original = text.upper().strip()
+    cleaned = original
+
+    # Remove the prefix only if it matches the start
     for prefix in MODEL_PREFIXES:
-        if text.startswith(prefix):
-            text = text[len(prefix):].strip()
-    
-    # Final model pattern match (remove junk after prefix)
-    match = re.search(MODEL_PATTERN, text)
-    return match.group(1) if match else text
+        if cleaned.startswith(prefix):
+            cleaned = cleaned[len(prefix):].strip()
+            break  # Exit after the first match to avoid over-stripping
+
+    # Only apply regex if prefix was removed
+    if cleaned != original:
+        match = re.search(MODEL_PATTERN, cleaned)
+        return match.group(1) if match else cleaned
+
+    # No prefix match → return original untouched
+    return cleaned
 
 df["model_number"] = df["model_number"].apply(strip_prefixes_from_model_number)
 
