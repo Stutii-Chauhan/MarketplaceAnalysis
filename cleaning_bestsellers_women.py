@@ -317,11 +317,11 @@ df["brand"] = df.apply(categorize_titan, axis=1)
 
 #have 100 products per price band and remove <10K products
 
-# df = df[df["price_band"] != "<10K"]
-# df = (
-#     df.groupby("price_band", group_keys=False)
-#     .apply(lambda x: x.sample(n=min(len(x), 100), random_state=42))
-# )
+df = df[df["price_band"] != "<10K"]
+df = (
+    df.groupby("price_band", group_keys=False)
+    .apply(lambda x: x.sample(n=min(len(x), 100), random_state=42))
+)
 
 #----------------------------------------------------------------
 #Cleaning Special Features
