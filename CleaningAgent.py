@@ -88,7 +88,7 @@ def extract_pure_model_number(val):
     return "NA"
 df["model_number"] = df["model_number"].apply(extract_pure_model_number)
 
-#--------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 
 #delete duplicate values with product_name + model_number
 df = df.drop_duplicates(subset=["product_name", "model_number"], keep="first")
