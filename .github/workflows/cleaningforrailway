@@ -1,0 +1,47 @@
+name: Notebook Cleaning Flow
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "CleaningAgent.py"
+      - "cleaning_bestsellers_men.py"
+      - "cleaning_bestsellers_women.py"
+
+  workflow_run:
+    workflows: ["Upload to Railway"]
+    types:
+      - completed
+
+jobs:
+  upload:
+    if: github.event_name == 'push' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          pip install pandas sqlalchemy psycopg2-binary openpyxl
+
+      - name: Run Cleaning Step 1
+        run: python CleaningAgent.py
+        env:
+          RAILWAY_DB_URL: ${{ secrets.RAILWAY_DB_URL }}
+
+      - name: Run Cleaning Step 2
+        run: python cleaning_bestsellers_men.py
+        env:
+          RAILWAY_DB_URL: ${{ secrets.RAILWAY_DB_URL }}
+
+      - name: Run Cleaning Step 3
+        run: python cleaning_bestsellers_women.py
+        env:
+          RAILWAY_DB_URL: ${{ secrets.RAILWAY_DB_URL }}
