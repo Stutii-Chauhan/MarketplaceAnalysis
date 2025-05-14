@@ -1,4 +1,4 @@
-name: Notebook Cleaning Flow
+name: Notebook Cleaning Flow - Railway
 
 on:
   workflow_dispatch:
