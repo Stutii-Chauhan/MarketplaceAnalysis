@@ -101,7 +101,7 @@ def render_best_sellers(gender):
     filtered_df = filtered_df.dropna(subset=["product_name", "url", "imageurl", "price"], how="any")
     
     # --- Pagination Setup ---
-    items_per_page = 15
+    items_per_page = 12
     total_items = len(filtered_df)
     total_pages = (total_items - 1) // items_per_page + 1
     if "page_number" not in st.session_state:
