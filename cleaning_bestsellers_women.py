@@ -18,59 +18,104 @@ password = quote_plus(raw_password)
 
 engine = create_engine(f"postgresql://{user}:{password}@{host}:{port}/{db}")
 
+#----------------------------------------------------------------
 #read the table
 df = pd.read_sql_table("bestsellers_women", con=engine)
 df.count()
 
-#delete rows with NaN/blank in url column and also in the price column
+#----------------------------------------------------------------
+
+#delete rows with NaN/blank in url column and also in the price Column.
 df = df.dropna(subset=["url"])
 df = df.dropna(subset=["price"])
 df.count()
 
-#Cleaning Model Number column
+#----------------------------------------------------------------
 
-def clean_and_fix_model_number(row):
-    def clean_model(val):
-        if pd.isna(val):
-            return None
-        val = str(val).strip()
+#Cleaning Model Number 
 
-        blacklist = ["casual watch", "watches", "combo", "legacy", "pack", "premium", "design", "men", "women"]
-        val_l = val.lower()
-        if any(x in val_l for x in blacklist) or len(val) <= 3:
-            return None
+MODEL_PATTERN = r'(?<!\w)([A-Z0-9]{3,24}(?:[\.\-_][A-Z0-9]{1,10})*)(?!\w)'
 
-        # Try to extract the model pattern
-        match = re.search(r'([A-Z]{1,3}[\dA-Z\-\.]{3,})$', val)
-        return match.group(1) if match else None
+BLACKLIST = {
+    "REGALIA", "STAINLESS", "AUTOMATICS", "COMBO", "PREMIUM", "CASUAL WATCH", "ANALOG",
+    "", "NA", "NONE", "NAN"
+}
+BRAND_BLACKLIST = {
+    "CASIO", "TITAN", "FOSSIL", "MATHEY", "TIMEX", "SEIKO", "CITIZEN", "RADO",
+    "TISSOT", "MOVADO", "DIESEL", "GUESS", "ESPRIT", "ALBA", "INVICTA"
+}
 
-    # Step 1: Clean existing Model Number
-    model_num = clean_model(row.get("model_number"))
-    if model_num:
-        return model_num
+def extract_model_number_from_text(text):
+    if not isinstance(text, str) or not text.strip():
+        return pd.NA
+    text = text.upper()
 
-    # Step 2: Fallback to Part Number
-    part_num = row.get("part_number")
-    if pd.notna(part_num) and str(part_num).strip():
-        return str(part_num).strip().upper()
+    # Split into possible tokens using "/", ",", or "or"
+    tokens = re.split(r"[\/,]| or ", text)
+    for token in tokens:
+        token = token.strip()
+        matches = re.findall(MODEL_PATTERN, token)
+        for value in matches:
+            if value in BRAND_BLACKLIST or value in BLACKLIST or not re.search(r'\d', value):
+                continue
+            return value
+    return pd.NA
 
-    # Step 3: Try extracting from Product Name
-    product_name = row.get("product_name", "")
-    if pd.notna(product_name):
-        match = re.findall(r'([A-Z]{2,5}[\d]{3,}[A-Z]{0,5})', product_name)
-        if match:
-            return match[0]
+def clean_model_number(row):
+    model = str(row.get("model_number", "")).strip().upper()
+    part = str(row.get("part_number", "")).strip().upper()
+    product_name = str(row.get("product_name", "")).strip()
 
-    # Step 4: Fallback to "NA"
+    if model and model not in BLACKLIST and model not in BRAND_BLACKLIST and re.search(MODEL_PATTERN, model):
+        return model
+
+    if part and part not in BLACKLIST and part not in BRAND_BLACKLIST and re.search(MODEL_PATTERN, part):
+        return part
+
+    model_from_name = extract_model_number_from_text(product_name)
+    if pd.notna(model_from_name):
+        return model_from_name
+
     return "NA"
 
-# Apply to DataFrame
-df["model_number"] = df.apply(clean_and_fix_model_number, axis=1)
+df["model_number"] = df.apply(clean_model_number, axis=1)
 
+# #Post update check on model_number
+# # Define common prefix patterns to strip
+MODEL_PREFIXES = [
+    "WATCH-", "WATCH_", "WATCH:", "MEN-", "WOMEN-", "FOSSIL ", "EMPORIO ARMANI ", "TSAR BOMBA-", "DIESEL ",
+    "MICHAEL KORS ", "MICHAEL-KORS ", "TOMMY HILFIGER ", "TISSOT ", "MODEL: ", "MODEL:", "INVICTA-", "ARMANI EXCHANGE "
+]
+
+def strip_prefixes_from_model_number(text):
+    if not isinstance(text, str):
+        return text
+    original = text.upper().strip()
+    cleaned = original
+
+    # Remove the prefix only if it matches the start
+    for prefix in MODEL_PREFIXES:
+        if cleaned.startswith(prefix):
+            cleaned = cleaned[len(prefix):].strip()
+            break  # Exit after the first match to avoid over-stripping
+
+    # Only apply regex if prefix was removed
+    if cleaned != original:
+        match = re.search(MODEL_PATTERN, cleaned)
+        return match.group(1) if match else cleaned
+
+    # No prefix match → return original untouched
+    return cleaned
+
+df["model_number"] = df["model_number"].apply(strip_prefixes_from_model_number)
+
+#----------------------------------------------------------------
 
 #delete duplicate values with product_name + model_number
 df = df.drop_duplicates(subset=["product_name", "model_number"], keep="first")
 df.count()
+
+#----------------------------------------------------------------
 
 #price cleaning
 df["price"] = (
@@ -83,6 +128,8 @@ df["price"] = (
 df = df[df["price"] >= 10000] #removing products with price < 10000
 df.count()
 
+#----------------------------------------------------------------
+
 #cleaning ratings
 df["rating(out_of_5)"] = (
     df["rating(out_of_5)"]
@@ -91,6 +138,8 @@ df["rating(out_of_5)"] = (
     .map(lambda x: int(x) if pd.notna(x) and x.is_integer() else round(x, 1) if pd.notna(x) else np.nan)
 )
 
+#----------------------------------------------------------------
+
 #adding price_band
 df["price_band"] = pd.cut(
     df["price"],
@@ -98,6 +147,8 @@ df["price_band"] = pd.cut(
     labels=["<10K", "10K-15K", "15K-25K", "25K-40K", "40K+"],
     right=False
 )
+
+#----------------------------------------------------------------
 
 df["discount_(%)"] = (
     df["discount_(%)"]
@@ -108,6 +159,7 @@ df["discount_(%)"] = (
     .map(lambda x: f"{int(x)}%" if x.is_integer() else f"{x}%" if pd.notna(x) else np.nan)
 )
 
+#----------------------------------------------------------------
 
 def normalize_to_mm(value):
     if pd.isna(value) or str(value).strip() == "":
@@ -128,11 +180,28 @@ df["band_width"] = df["band_width"].apply(normalize_to_mm)
 df["case_diameter"] = df["case_diameter"].apply(normalize_to_mm)
 df["case_thickness"] = df["case_thickness"].apply(normalize_to_mm)
 
+#----------------------------------------------------------------
+# cleaning model year
+def clean_model_year(value):
+    if pd.isna(value):
+        return "NA"
+    try:
+        # Convert to float first, then to int to remove .0, finally to string
+        return str(int(float(value)))
+    except:
+        return "NA"
+
+# Apply to your column
+df["model_year"] = df["model_year"].apply(clean_model_year)
+
+#----------------------------------------------------------------
+
 #removing the unwanted keywords
 unwanted_keywords = ["pocket watch", "repair tool", "watch bezel", "watch band", "tool", "watch winder", "watch case"]
 df = df[~df["product_name"].str.lower().str.contains('|'.join(unwanted_keywords))]
 df.count()
 
+#----------------------------------------------------------------
 
 #filling major brand names for the products where brand name is missing
 
@@ -192,32 +261,35 @@ brand_map = {
     "gc": "GC"
 }
 
-# Lowercase version of product names for pattern matching
-df["__product_lower__"] = df["product_name"].str.lower()
+# Fill missing brand using product_name
+def infer_brand(row):
+    brand = str(row.get("brand", "")).strip().lower()
+    product_name = str(row.get("product_name", "")).lower()
 
-# Temporary brand match column (explicitly set as object type to store strings)
-df["__brand_match__"] = pd.Series([np.nan] * len(df), dtype="object")
+    # If brand is already valid, return as-is
+    if brand and brand != "nan" and brand != "na":
+        return row["brand"].strip().title()
 
-# Match brand keywords to update missing brand values
-for keyword, clean_brand in brand_map.items():
-    pattern = rf"\b{re.escape(keyword)}\b"
-    mask = df["brand"].isna() & df["__product_lower__"].str.contains(pattern, regex=True, na=False)
-    df.loc[mask, "__brand_match__"] = clean_brand
+    # Infer from product name
+    for keyword, mapped_brand in brand_map.items():
+        if keyword in product_name:
+            return mapped_brand
 
-# Fill missing brand values with matched brands
-df["brand"] = df["brand"].fillna(df["__brand_match__"])
+    return "NA"
 
-# Still missing? Mark as "NA"
-df["brand"] = df["brand"].fillna("NA")
+# Apply to DataFrame
+df["brand"] = df.apply(infer_brand, axis=1)
 
-# Drop helper columns
-df.drop(columns=["__product_lower__", "__brand_match__"], inplace=True)
-
+#----------------------------------------------------------------
 
 #Dividing Titan as Titan, Xylys, Edge and Raga
 def categorize_titan(row):
     brand = str(row["brand"]).strip().title()
     product = str(row["product_name"]).strip().title()
+
+    # Direct rename if brand is "Xylys"
+    if brand == "Xylys":
+        return "Titan Xylys"
 
     if brand == "Titan":
         if "Xylys" in product:
@@ -228,15 +300,20 @@ def categorize_titan(row):
             return "Titan Raga"
         else:
             return "Titan"
+
     return brand
 
 df["brand"] = df.apply(categorize_titan, axis=1)
 
+#----------------------------------------------------------------
+
 #drop keywords from men watches (if any)
 
-male_keywords = ["male", "men", "man", "boy", "gents", "men's", "boy's","couple","unisex"]
-pattern = r"|".join([re.escape(word) for word in male_keywords])
+female_keywords = ["male", "men", "man", "boy", "gents", "men's", "boy's","couple","unisex"]
+pattern = r"|".join([re.escape(word) for word in female_keywords])
 df = df[~df["product_name"].str.contains(pattern, case=False, na=False)]
+
+#----------------------------------------------------------------
 
 #have 100 products per price band and remove <10K products
 
@@ -246,13 +323,41 @@ df = (
     .apply(lambda x: x.sample(n=min(len(x), 100), random_state=42))
 )
 
+#----------------------------------------------------------------
+#Cleaning Special Features
+
+def clean_special_features(text):
+    if not isinstance(text, str):
+        return text
+    
+    # Replace semicolons with commas
+    text = text.replace(";", ",")
+
+    # Capitalize each word (first letter after space)
+    text = " ".join(word.capitalize() for word in text.split())
+    
+    return text
+
+df["special_features"] = df["special_features"].apply(clean_special_features)
+
+#----------------------------------------------------------------
+
 #replace Nulls etc with "NA"
 
 df = df.replace({np.nan: "NA"})
 df = df.applymap(lambda x: "NA" if str(x).strip().lower() in ["", "na", "n/a", "none", "null", "nan", "n.a."] else x)
 
+#----------------------------------------------------------------
+
 #drop part_number
 df.drop(columns=["part_number"], inplace=True)
+
+#----------------------------------------------------------------
+
+#as of date column
+df["As of Date"] = datetime.today().strftime("%Y-%m-%d")
+
+#----------------------------------------------------------------
 
 #saving file
 
