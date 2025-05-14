@@ -200,9 +200,9 @@ chat_container = st.container()
 with chat_container:
     for msg in st.session_state.chat_history:
         if msg["role"] == "user":
-            st.markdown(f"🧍‍♂️ **You:** {msg['content']}")
+            st.markdown(f" **You:** {msg['content']}")
         else:
-            st.markdown(f"🤖 **Buzz:** `{msg['content']}`")
+            st.markdown(f" **Buzz:** `{msg['content']}`")
 
 if st.session_state.last_table:
     st.caption(f"📌 Last table used: `{st.session_state.last_table}`")
