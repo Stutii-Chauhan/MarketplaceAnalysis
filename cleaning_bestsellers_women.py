@@ -309,9 +309,9 @@ df["brand"] = df.apply(categorize_titan, axis=1)
 
 #drop keywords from women watches (if any)
 
-male_keywords = ["male", "men", "man", "boy", "gents", "men's", "boy's","couple"]
-pattern = r"|".join([re.escape(word) for word in male_keywords])
-df = df[~df["product_name"].str.contains(pattern, case=False, na=False)]
+male_keywords = ["male", "men", "man", "boy", "gents", "men's", "boy's", "couple"]
+pattern = r"\b(" + "|".join([re.escape(word) for word in male_keywords]) + r")\b"
+df = df[~df["product_name"].str.contains(pattern, case=False, na=False, regex=True)]
 
 #----------------------------------------------------------------
 
