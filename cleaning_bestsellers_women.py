@@ -135,20 +135,18 @@ def extract_custom_rating(text):
     if not isinstance(text, str):
         return np.nan
 
-    matches = re.findall(r"\d+", text)  # Find all numeric components
+    matches = re.findall(r"\d+", text)  # Find all numbers
     if len(matches) >= 2:
-        try:
-            return float(f"{matches[0]}.{matches[1]}")
-        except:
-            return np.nan
+        return float(f"{matches[0]}.{matches[1]}")
     elif len(matches) == 1:
         return float(matches[0])
-    else:
-        return np.nan
+    return np.nan
 
+# Apply extraction
 df["rating(out_of_5)"] = df["rating(out_of_5)"].apply(extract_custom_rating)
 
-
+# ✅ Replace NaN with 0.0 instead of "NA"
+df["rating(out_of_5)"] = df["rating(out_of_5)"].fillna(0.0)
 
 #----------------------------------------------------------------
 
@@ -356,8 +354,8 @@ df["special_features"] = df["special_features"].apply(clean_special_features)
 
 #replace Nulls etc with "NA"
 
-df = df.replace({np.nan: "NA"})
-df = df.applymap(lambda x: "NA" if str(x).strip().lower() in ["", "na", "n/a", "none", "null", "nan", "n.a."] else x)
+# df = df.replace({np.nan: "NA"})
+# df = df.applymap(lambda x: "NA" if str(x).strip().lower() in ["", "na", "n/a", "none", "null", "nan", "n.a."] else x)
 
 #----------------------------------------------------------------
 
