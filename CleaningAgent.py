@@ -211,8 +211,19 @@ df["case_diameter"] = df["case_diameter"].apply(normalize_to_mm)
 df["case_thickness"] = df["case_thickness"].apply(normalize_to_mm)
 
 
-# Convert model_year to integer
-df["model_year"] = pd.to_numeric(df["model_year"], errors="coerce").astype("Int64")
+# cleaning model year
+def clean_model_year(value):
+    if pd.isna(value):
+        return "NA"
+    try:
+        # Convert to float first, then to int to remove .0, finally to string
+        return str(int(float(value)))
+    except:
+        return "NA"
+
+# Apply to your column
+df["model_year"] = df["model_year"].apply(clean_model_year)
+
 
 #removing the unwanted keywords
 unwanted_keywords = ["pocket watch", "repair tool", "watch bezel", "watch band", "tool", "watch winder", "watch case"]
