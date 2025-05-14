@@ -190,46 +190,49 @@ def render_best_sellers(gender):
 
         # --- Pagination Controls ---
         st.markdown("<br>", unsafe_allow_html=True)
-        col1, col2, col3 = st.columns([1, 8, 1])
         
-        with col1:
-            if st.session_state.page_number > 1:
-                if st.button("⬅️ Prev"):
-                    st.session_state.page_number -= 1
+        with st.form("pagination_form", clear_on_submit=True):
+            col1, col2, col3 = st.columns([1, 8, 1])
+            clicked_page = None
         
-        with col2:
-            current = st.session_state.page_number
-            window = 2
-            total_pages = (total_items - 1) // items_per_page + 1
+            with col1:
+                if st.session_state.page_number > 1:
+                    if st.form_submit_button("⬅️ Prev"):
+                        st.session_state.page_number -= 1
         
-            page_buttons = []
-            page_buttons.append(1)
-            if current - window > 2:
-                page_buttons.append("...")
+            with col2:
+                current = st.session_state.page_number
+                window = 2
+                total_pages = (total_items - 1) // items_per_page + 1
         
-            for p in range(max(2, current - window), min(total_pages, current + window + 1)):
-                page_buttons.append(p)
+                page_buttons = [1]
+                if current - window > 2:
+                    page_buttons.append("...")
         
-            if current + window < total_pages - 1:
-                page_buttons.append("...")
+                for p in range(max(2, current - window), min(current + window + 1, total_pages)):
+                    page_buttons.append(p)
         
-            if total_pages != 1:
-                page_buttons.append(total_pages)
+                if current + window < total_pages - 1:
+                    page_buttons.append("...")
         
-            button_cols = st.columns(len(page_buttons))
-            for idx, p in enumerate(page_buttons):
-                if p == "...":
-                    button_cols[idx].markdown("**...**")
-                elif p == current:
-                    button_cols[idx].button(f"• {p} •", disabled=True)
-                else:
-                    if button_cols[idx].button(str(p)):
-                        st.session_state.page_number = p
+                if total_pages != 1:
+                    page_buttons.append(total_pages)
         
-        with col3:
-            if st.session_state.page_number < total_pages:
-                if st.button("Next ➡️"):
-                    st.session_state.page_number += 1
+                button_cols = st.columns(len(page_buttons))
+                for idx, p in enumerate(page_buttons):
+                    if p == "...":
+                        button_cols[idx].markdown("**...**")
+                    elif p == current:
+                        button_cols[idx].form_submit_button(f"• {p} •", disabled=True)
+                    else:
+                        if button_cols[idx].form_submit_button(str(p)):
+                            st.session_state.page_number = p
+        
+            with col3:
+                if st.session_state.page_number < total_pages:
+                    if st.form_submit_button("Next ➡️"):
+                        st.session_state.page_number += 1
+
 
 # ---- Main UI ----
 st.set_page_config(page_title="Best Sellers", layout="wide", page_icon="📦")
