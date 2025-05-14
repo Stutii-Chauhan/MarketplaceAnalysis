@@ -129,15 +129,15 @@ df = df[df["price"] >= 10000] #removing products with price < 10000
 df.count()
 
 #----------------------------------------------------------------
-
 #cleaning ratings
+
 df["rating(out_of_5)"] = (
     df["rating(out_of_5)"]
-    .str.extract(r"(\d+\.?\d*)")        # extract only the numeric part
-    .astype(float)
-    .map(lambda x: int(x) if pd.notna(x) and x.is_integer() else round(x, 1) if pd.notna(x) else np.nan)
+    .astype(str)
+    .str.extract(r"(\d+\.?\d*)")[0]     # extract numeric part
+    .astype(float)                      # ensure it's float
+    .round(1)                           # optional: round to 1 decimal
 )
-
 #----------------------------------------------------------------
 
 #adding price_band
