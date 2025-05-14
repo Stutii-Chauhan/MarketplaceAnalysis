@@ -31,7 +31,7 @@ def load_data(table_name):
 
 def render_best_sellers(gender):
     st.title(f" Best Sellers for {gender}")
-    table = "scraped_data_cleaned_men" if gender == "Men" else "scraped_data_cleaned_men"
+    table = "scraped_data_cleaned_men" if gender == "Men" else "scraped_data_cleaned_women"
     df = load_data(table)
 
     if "filtered_df" in st.session_state:
