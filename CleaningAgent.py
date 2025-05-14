@@ -18,17 +18,20 @@ password = quote_plus(raw_password)
 
 engine = create_engine(f"postgresql://{user}:{password}@{host}:{port}/{db}")
 
+#----------------------------------------------------------------
 #read the table
 df = pd.read_sql_table("final_watch_data_cleaned", con=engine)
 df.count()
 
+#----------------------------------------------------------------
 
 #delete rows with NaN/blank in url column and also in the price Column.
 df = df.dropna(subset=["url"])
 df = df.dropna(subset=["price"])
 df.count()
 
-#------------------------------------------------------------------------------------------
+#----------------------------------------------------------------
+
 #Cleaning Model Number 
 
 MODEL_PATTERN = r'(?<!\w)([A-Z0-9]{3,24}(?:[\.\-_][A-Z0-9]{1,10})*)(?!\w)'
@@ -153,6 +156,7 @@ df["model_number"] = df["model_number"].apply(strip_prefixes_from_model_number)
 #delete duplicate values with product_name + model_number
 df = df.drop_duplicates(subset=["product_name", "model_number"], keep="first")
 df.count()
+#----------------------------------------------------------------
 
 #price cleaning
 df["price"] = (
@@ -165,6 +169,8 @@ df["price"] = (
 df = df[df["price"] >= 10000] #removing products with price < 10000
 df.count()
 
+#----------------------------------------------------------------
+
 #cleaning ratings
 df["rating(out_of_5)"] = (
     df["rating(out_of_5)"]
@@ -173,6 +179,8 @@ df["rating(out_of_5)"] = (
     .map(lambda x: int(x) if pd.notna(x) and x.is_integer() else round(x, 1) if pd.notna(x) else np.nan)
 )
 
+#----------------------------------------------------------------
+
 #adding price_band
 df["price_band"] = pd.cut(
     df["price"],
@@ -180,6 +188,9 @@ df["price_band"] = pd.cut(
     labels=["<10K", "10K-15K", "15K-25K", "25K-40K", "40K+"],
     right=False
 )
+
+#----------------------------------------------------------------
+#cleaning discount column
 
 df["discount_(%)"] = (
     df["discount_(%)"]
@@ -190,6 +201,7 @@ df["discount_(%)"] = (
     .map(lambda x: f"{int(x)}%" if x.is_integer() else f"{x}%" if pd.notna(x) else np.nan)
 )
 
+#----------------------------------------------------------------
 
 def normalize_to_mm(value):
     if pd.isna(value) or str(value).strip() == "":
@@ -210,6 +222,7 @@ df["band_width"] = df["band_width"].apply(normalize_to_mm)
 df["case_diameter"] = df["case_diameter"].apply(normalize_to_mm)
 df["case_thickness"] = df["case_thickness"].apply(normalize_to_mm)
 
+#----------------------------------------------------------------
 
 # cleaning model year
 def clean_model_year(value):
@@ -225,11 +238,14 @@ def clean_model_year(value):
 df["model_year"] = df["model_year"].apply(clean_model_year)
 
 
+#----------------------------------------------------------------
+
 #removing the unwanted keywords
 unwanted_keywords = ["pocket watch", "repair tool", "watch bezel", "watch band", "tool", "watch winder", "watch case"]
 df = df[~df["product_name"].str.lower().str.contains('|'.join(unwanted_keywords))]
 df.count()
 
+#----------------------------------------------------------------
 
 #filling major brand names for the products where brand name is missing
 
@@ -309,6 +325,8 @@ def infer_brand(row):
 # Apply to DataFrame
 df["brand"] = df.apply(infer_brand, axis=1)
 
+#----------------------------------------------------------------
+
 #Dividing Titan as Titan, Xylys, Edge and Raga
 def categorize_titan(row):
     brand = str(row["brand"]).strip().title()
@@ -332,6 +350,8 @@ def categorize_titan(row):
 
 df["brand"] = df.apply(categorize_titan, axis=1)
 
+#----------------------------------------------------------------
+
 #Adding a gender column
 def infer_gender(product_name):
     name = str(product_name).lower()
@@ -345,6 +365,8 @@ def infer_gender(product_name):
     else:
         return "Unisex"
 df["gender"] = df["product_name"].apply(infer_gender)
+
+#----------------------------------------------------------------
 
 #Cleaning Special Features
 
@@ -362,16 +384,24 @@ def clean_special_features(text):
 
 df["special_features"] = df["special_features"].apply(clean_special_features)
 
+#----------------------------------------------------------------
+
 #replace Nulls etc with "NA"
 
 df = df.replace({np.nan: "NA"})
 df = df.applymap(lambda x: "NA" if str(x).strip().lower() in ["", "na", "n/a", "none", "null", "nan", "n.a."] else x)
 
+#----------------------------------------------------------------
+
 #drop part_number
 df.drop(columns=["part_number"], inplace=True)
 
+#----------------------------------------------------------------
+
 #as of date column
 df["As of Date"] = datetime.today().strftime("%Y-%m-%d")
+
+#----------------------------------------------------------------
 
 #saving file
 
