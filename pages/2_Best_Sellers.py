@@ -156,7 +156,7 @@ def render_best_sellers(gender):
                                         <b>Rating:</b> {
                                             int(float(row['rating(out_of_5)'])) if float(row['rating(out_of_5)']).is_integer()
                                             else round(float(row['rating(out_of_5)']), 1)
-                                        }/5
+                                        }/5<br>
                                         <b>Discount:</b> {
                                             "No" if pd.notna(row["discount_(%)"]) and row["discount_(%)"] in ["0", "0.0"]
                                             else row["discount_(%)"] if pd.notna(row["discount_(%)"])
