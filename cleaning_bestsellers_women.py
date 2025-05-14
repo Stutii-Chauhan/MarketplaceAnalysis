@@ -193,16 +193,12 @@ df["case_thickness"] = df["case_thickness"].apply(normalize_to_mm)
 #----------------------------------------------------------------
 # cleaning model year
 def clean_model_year(value):
-    if pd.isna(value):
-        return "NA"
     try:
-        # Convert to float first, then to int to remove .0, finally to string
-        return str(int(float(value)))
+        # Remove decimals like 2020.0 → 2020
+        return int(float(value))
     except:
-        return "NA"
-
-# Apply to your column
-df["model_year"] = df["model_year"].apply(clean_model_year)
+        return 0  # Use 0 instead of "NA" to keep it numeric
+df["model_year"] = df["model_year"].apply(clean_model_year).astype(int)
 
 #----------------------------------------------------------------
 
