@@ -1,6 +1,7 @@
 name: Upload CSV/XLSX to Railway
 
 on:
+  workflow_dispatch:
   push:
     paths:
       - "*.csv"
