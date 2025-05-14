@@ -154,10 +154,9 @@ def render_best_sellers(gender):
                                         <b>Model:</b> {row.get('model_number', 'N/A')}<br>
                                         <b>Price:</b> ₹{int(row['price'])}<br>
                                         <b>Rating:</b> {
-                                            f"{round(float(row['rating(out_of_5)']), 1)}"
-                                            if pd.notna(row['rating(out_of_5)']) and str(row['rating(out_of_5)']).replace('.', '', 1).isdigit()
-                                            else "N/A"
-                                        }/5<br>
+                                            int(float(row['rating(out_of_5)'])) if float(row['rating(out_of_5)']).is_integer()
+                                            else round(float(row['rating(out_of_5)']), 1)
+                                        }/5
                                         <b>Discount:</b> {
                                             "No" if pd.notna(row["discount_(%)"]) and row["discount_(%)"] in ["0", "0.0"]
                                             else row["discount_(%)"] if pd.notna(row["discount_(%)"])
