@@ -354,8 +354,8 @@ df["special_features"] = df["special_features"].apply(clean_special_features)
 
 #replace Nulls etc with "NA"
 
-# df = df.replace({np.nan: "NA"})
-# df = df.applymap(lambda x: "NA" if str(x).strip().lower() in ["", "na", "n/a", "none", "null", "nan", "n.a."] else x)
+df = df.replace({np.nan: "NA"})
+df = df.applymap(lambda x: "NA" if str(x).strip().lower() in ["", "na", "n/a", "none", "null", "nan", "n.a."] else x)
 
 #----------------------------------------------------------------
 
