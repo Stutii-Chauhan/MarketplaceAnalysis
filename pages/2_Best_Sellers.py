@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 from sqlalchemy import create_engine
 from urllib.parse import quote_plus
+import textwrap
 
 # ---- Supabase DB Connection ----
 DB = st.secrets["SUPABASE_DB"]
@@ -127,50 +128,52 @@ def render_best_sellers(gender):
                         # Skip any row with essential nulls (safety check)
                         if pd.isna(row["product_name"]) or pd.isna(row["url"]) or pd.isna(row["imageurl"]) or pd.isna(row["price"]):
                             continue
-
+                        
                         with cols[j]:
-                            st.markdown(
-                                f"""
-                                <div style="border:1px solid #ddd; padding:20px; border-radius:10px;
-                                            box-shadow:0 2px 10px rgba(0,0,0,0.05); height:540px;
-                                            background-color:white; display:flex; flex-direction:column;
-                                            justify-content:space-between; width:100%;">
-                                    
-                                    <div style="text-align:center; margin-bottom:15px;">
-                                        <a href="{row['url']}" target="_blank">
-                                            <img src="{row['imageurl']}"
-                                                 style="height:250px; width:250px; object-fit:cover;
-                                                        object-position:center; display:block; margin:auto;" />
-                                        </a>
-                                    </div>
-                                    <div style="font-weight:600; font-size:1rem; margin-bottom:10px;
-                                                display: -webkit-box;
-                                                -webkit-line-clamp: 2;
-                                                -webkit-box-orient: vertical;
-                                                overflow: hidden;
-                                                text-align:center;
-                                                height:3em;">
-                                        {row['product_name']}
-                                    </div>
-                                    <div style="font-size:0.95rem; line-height:1.6; text-align:left;">
-                                        <b>Brand:</b> {row.get('brand', 'N/A')}<br>
-                                        <b>Model:</b> {row.get('model_number', 'N/A')}<br>
-                                        <b>Price:</b> ₹{int(row['price'])}<br>
-                                        <b>Rating:</b> {
-                                            int(float(row['rating(out_of_5)'])) if float(row['rating(out_of_5)']).is_integer()
-                                            else round(float(row['rating(out_of_5)']), 1)
-                                        }/5<br>
-                                        <b>Discount:</b> {
-                                            "No" if pd.notna(row["discount_(%)"]) and row["discount_(%)"] in ["0", "0.0"]
-                                            else row["discount_(%)"] if pd.notna(row["discount_(%)"])
-                                            else "N/A"
-                                        }
-                                    </div>
+                            html = f"""
+                            <div style="border:1px solid #ddd; padding:20px; border-radius:10px;
+                                        box-shadow:0 2px 10px rgba(0,0,0,0.05); height:540px;
+                                        background-color:white; display:flex; flex-direction:column;
+                                        justify-content:space-between; width:100%;">
+                                
+                                <div style="text-align:center; margin-bottom:15px;">
+                                    <a href="{row['url']}" target="_blank">
+                                        <img src="{row['imageurl']}"
+                                             style="height:250px; width:250px; object-fit:cover;
+                                                    object-position:center; display:block; margin:auto;" />
+                                    </a>
                                 </div>
-                                """,
-                                unsafe_allow_html=True
-                            )
-            st.markdown("<div style='height: 30px;'></div>", unsafe_allow_html=True)
+                        
+                                <div style="font-weight:600; font-size:1rem; margin-bottom:10px;
+                                            display: -webkit-box;
+                                            -webkit-line-clamp: 2;
+                                            -webkit-box-orient: vertical;
+                                            overflow: hidden;
+                                            text-align:center;
+                                            height:3em;">
+                                    {row['product_name']}
+                                </div>
+                        
+                                <div style="font-size:0.95rem; line-height:1.6; text-align:left;">
+                                    <b>Brand:</b> {row.get('brand', 'N/A')}<br>
+                                    <b>Model:</b> {row.get('model_number', 'N/A')}<br>
+                                    <b>Price:</b> ₹{int(row['price'])}<br>
+                                    <b>Rating:</b> {
+                                        int(float(row['rating(out_of_5)'])) if float(row['rating(out_of_5)']).is_integer()
+                                        else round(float(row['rating(out_of_5)']), 1)
+                                    }/5<br>
+                                    <b>Discount:</b> {
+                                        "No" if pd.notna(row["discount_(%)"]) and row["discount_(%)"] in ["0", "0.0"]
+                                        else row["discount_(%)"] if pd.notna(row["discount_(%)"])
+                                        else "N/A"
+                                    }
+                                </div>
+                            </div>
+                            """
+                            st.markdown(textwrap.dedent(html), unsafe_allow_html=True)
+
+
+        
 
         # --- Pagination Controls ---
         st.markdown("<br>", unsafe_allow_html=True)
