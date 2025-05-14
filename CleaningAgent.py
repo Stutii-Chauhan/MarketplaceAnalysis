@@ -79,27 +79,27 @@ df["model_number"] = df.apply(clean_model_number, axis=1)
 
 # #Post update check on model_number
 # # Define common prefix patterns to strip
-# MODEL_PREFIXES = [
-#     "WATCH-", "WATCH_", "FOSSIL ", "EMPORIO ARMANI ", "TSAR BOMBA-", "DIESEL ",
-#     "MICHAEL KORS ", "MICHAEL-KORS ", "TOMMY HILFIGER ", "TISSOT ",
-#     "INVICTA-", "ARMANI EXCHANGE "
-# ]
+MODEL_PREFIXES = [
+    "WATCH-", "WATCH_", "WATCH:", "MEN-", "WOMEN-", "FOSSIL ", "EMPORIO ARMANI ", "TSAR BOMBA-", "DIESEL ",
+    "MICHAEL KORS ", "MICHAEL-KORS ", "TOMMY HILFIGER ", "TISSOT ",
+    "INVICTA-", "ARMANI EXCHANGE "
+]
 
-# def strip_prefixes_from_model_number(text):
-#     if not isinstance(text, str):
-#         return text
-#     text = text.upper().strip()
+def strip_prefixes_from_model_number(text):
+    if not isinstance(text, str):
+        return text
+    text = text.upper().strip()
     
-#     # Remove any of the known prefixes
-#     for prefix in MODEL_PREFIXES:
-#         if text.startswith(prefix):
-#             text = text[len(prefix):].strip()
+    # Remove any of the known prefixes
+    for prefix in MODEL_PREFIXES:
+        if text.startswith(prefix):
+            text = text[len(prefix):].strip()
     
-#     # Final model pattern match (remove junk after prefix)
-#     match = re.search(MODEL_PATTERN, text)
-#     return match.group(1) if match else text
+    # Final model pattern match (remove junk after prefix)
+    match = re.search(MODEL_PATTERN, text)
+    return match.group(1) if match else text
 
-# df["model_number"] = df["model_number"].apply(strip_prefixes_from_model_number)
+df["model_number"] = df["model_number"].apply(strip_prefixes_from_model_number)
 
 #-------------------------------------------------------------------------------
 
