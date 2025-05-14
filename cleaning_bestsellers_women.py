@@ -26,9 +26,9 @@ df.count()
 #----------------------------------------------------------------
 
 #delete rows with NaN/blank in url column and also in the price Column.
-df = df.dropna(subset=["url"])
-df = df.dropna(subset=["price"])
-df.count()
+# df = df.dropna(subset=["url"])
+# df = df.dropna(subset=["price"])
+# df.count()
 
 #----------------------------------------------------------------
 
@@ -112,8 +112,8 @@ df["model_number"] = df["model_number"].apply(strip_prefixes_from_model_number)
 #----------------------------------------------------------------
 
 #delete duplicate values with product_name + model_number
-df = df.drop_duplicates(subset=["product_name", "model_number"], keep="first")
-df.count()
+# df = df.drop_duplicates(subset=["product_name", "model_number"], keep="first")
+# df.count()
 
 #----------------------------------------------------------------
 
@@ -309,9 +309,9 @@ df["brand"] = df.apply(categorize_titan, axis=1)
 
 #drop keywords from men watches (if any)
 
-female_keywords = ["male", "men", "man", "boy", "gents", "men's", "boy's","couple","unisex"]
-pattern = r"|".join([re.escape(word) for word in female_keywords])
-df = df[~df["product_name"].str.contains(pattern, case=False, na=False)]
+# female_keywords = ["male", "men", "man", "boy", "gents", "men's", "boy's","couple","unisex"]
+# pattern = r"|".join([re.escape(word) for word in female_keywords])
+# df = df[~df["product_name"].str.contains(pattern, case=False, na=False)]
 
 #----------------------------------------------------------------
 
