@@ -31,7 +31,8 @@ df.count()
 #------------------------------------------------------------------------------------------
 #Cleaning Model Number 
 
-MODEL_PATTERN = r'(?<!\w)([A-Z0-9]{3,24}(?:[\.\-][A-Z0-9]{1,6})*)(?!\w)'
+MODEL_PATTERN = r'(?<!\w)([A-Z0-9]{3,24}(?:[\.\-_][A-Z0-9]{1,10})*)(?!\w)'
+
 BLACKLIST = {
     "REGALIA", "STAINLESS", "AUTOMATICS", "COMBO", "PREMIUM", "CASUAL WATCH", "ANALOG",
     "", "NA", "NONE", "NAN"
@@ -77,18 +78,28 @@ def clean_model_number(row):
 df["model_number"] = df.apply(clean_model_number, axis=1)
 
 #Post update check on model_number
-# def extract_pure_model_number(val):
-#     if pd.isna(val):
-#         return "NA"
+# Define common prefix patterns to strip
+MODEL_PREFIXES = [
+    "WATCH-", "WATCH_", "FOSSIL ", "EMPORIO ARMANI ", "TSAR BOMBA-", "DIESEL ",
+    "MICHAEL KORS ", "MICHAEL-KORS ", "TOMMY HILFIGER ", "TISSOT ",
+    "INVICTA-", "ARMANI EXCHANGE "
+]
 
-#     val = str(val).strip().upper()
-
-#     match = re.findall(r'\b[A-Z]{1,4}[\d]{2,}[A-Z\d\-]*\b', val)
-#     if match:
-#         return match[-1]
+def strip_prefixes_from_model_number(text):
+    if not isinstance(text, str):
+        return text
+    text = text.upper().strip()
     
-#     return "NA"
-# df["model_number"] = df["model_number"].apply(extract_pure_model_number)
+    # Remove any of the known prefixes
+    for prefix in MODEL_PREFIXES:
+        if text.startswith(prefix):
+            text = text[len(prefix):].strip()
+    
+    # Final model pattern match (remove junk after prefix)
+    match = re.search(MODEL_PATTERN, text)
+    return match.group(1) if match else text
+
+df["model_number"] = df["model_number"].apply(strip_prefixes_from_model_number)
 
 #-------------------------------------------------------------------------------
 
