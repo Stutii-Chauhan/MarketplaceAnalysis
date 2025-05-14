@@ -112,8 +112,8 @@ df["model_number"] = df["model_number"].apply(strip_prefixes_from_model_number)
 #----------------------------------------------------------------
 
 #delete duplicate values with product_name + model_number
-# df = df.drop_duplicates(subset=["product_name", "model_number"], keep="first")
-# df.count()
+df = df.drop_duplicates(subset=["product_name", "model_number"], keep="first")
+df.count()
 
 #----------------------------------------------------------------
 
