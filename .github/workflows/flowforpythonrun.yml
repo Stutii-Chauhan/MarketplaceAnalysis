@@ -6,15 +6,10 @@ on:
     paths:
       - "CleaningAgent.py"
 
-  workflow_run:
-    workflows: ["Upload to Supabase"]
-    types:
-      - completed
-
 jobs:
   upload:
-    # Remove or comment this during testing if it's skipping
-    if: github.event_name == 'push' || github.event.workflow_run.conclusion == 'success'
+    # REMOVE THIS FOR TESTING
+    # if: github.event_name == 'push' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
 
     steps:
