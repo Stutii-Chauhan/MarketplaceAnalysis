@@ -22,68 +22,111 @@ df = df.dropna(subset=["url"])
 df = df.dropna(subset=["price"])
 df.count()
 
+#------------------------------------------------------------------------------------------
 #Cleaning Model Number 
 
-MODEL_PATTERN = r'(?<!\w)([A-Z0-9]{3,24}(?:[\.\-][A-Z0-9]{1,6})*)(?!\w)'
-BLACKLIST = {
-    "REGALIA", "STAINLESS", "AUTOMATICS", "COMBO", "PREMIUM", "CASUAL WATCH", "ANALOG",
-    "", "NA", "NONE", "NAN"
-}
-BRAND_BLACKLIST = {
-    "CASIO", "TITAN", "FOSSIL", "MATHEY", "TIMEX", "SEIKO", "CITIZEN", "RADO",
-    "TISSOT", "MOVADO", "DIESEL", "GUESS", "ESPRIT", "ALBA", "INVICTA"
-}
+# MODEL_PATTERN = r'(?<!\w)([A-Z0-9]{3,24}(?:[\.\-][A-Z0-9]{1,6})*)(?!\w)'
+# BLACKLIST = {
+#     "REGALIA", "STAINLESS", "AUTOMATICS", "COMBO", "PREMIUM", "CASUAL WATCH", "ANALOG",
+#     "", "NA", "NONE", "NAN"
+# }
+# BRAND_BLACKLIST = {
+#     "CASIO", "TITAN", "FOSSIL", "MATHEY", "TIMEX", "SEIKO", "CITIZEN", "RADO",
+#     "TISSOT", "MOVADO", "DIESEL", "GUESS", "ESPRIT", "ALBA", "INVICTA"
+# }
 
-def extract_model_number_from_text(text):
-    if not isinstance(text, str) or not text.strip():
-        return pd.NA
-    text = text.upper()
+# def extract_model_number_from_text(text):
+#     if not isinstance(text, str) or not text.strip():
+#         return pd.NA
+#     text = text.upper()
 
-    # Split into possible tokens using "/", ",", or "or"
-    tokens = re.split(r"[\/,]| or ", text)
-    for token in tokens:
-        token = token.strip()
-        matches = re.findall(MODEL_PATTERN, token)
-        for value in matches:
-            if value in BRAND_BLACKLIST or value in BLACKLIST or not re.search(r'\d', value):
-                continue
-            return value
-    return pd.NA
+#     # Split into possible tokens using "/", ",", or "or"
+#     tokens = re.split(r"[\/,]| or ", text)
+#     for token in tokens:
+#         token = token.strip()
+#         matches = re.findall(MODEL_PATTERN, token)
+#         for value in matches:
+#             if value in BRAND_BLACKLIST or value in BLACKLIST or not re.search(r'\d', value):
+#                 continue
+#             return value
+#     return pd.NA
 
-def clean_model_number(row):
-    model = str(row.get("model_number", "")).strip().upper()
-    part = str(row.get("part_number", "")).strip().upper()
-    product_name = str(row.get("product_name", "")).strip()
+# def clean_model_number(row):
+#     model = str(row.get("model_number", "")).strip().upper()
+#     part = str(row.get("part_number", "")).strip().upper()
+#     product_name = str(row.get("product_name", "")).strip()
 
-    if model and model not in BLACKLIST and model not in BRAND_BLACKLIST and re.search(MODEL_PATTERN, model):
-        return model
+#     if model and model not in BLACKLIST and model not in BRAND_BLACKLIST and re.search(MODEL_PATTERN, model):
+#         return model
 
-    if part and part not in BLACKLIST and part not in BRAND_BLACKLIST and re.search(MODEL_PATTERN, part):
-        return part
+#     if part and part not in BLACKLIST and part not in BRAND_BLACKLIST and re.search(MODEL_PATTERN, part):
+#         return part
 
-    model_from_name = extract_model_number_from_text(product_name)
-    if pd.notna(model_from_name):
-        return model_from_name
+#     model_from_name = extract_model_number_from_text(product_name)
+#     if pd.notna(model_from_name):
+#         return model_from_name
 
-    return "NA"
+#     return "NA"
 
-df["model_number"] = df.apply(clean_model_number, axis=1)
+# df["model_number"] = df.apply(clean_model_number, axis=1)
 
-#Post update check on model_number
-def extract_pure_model_number(val):
-    if pd.isna(val):
-        return "NA"
+# #Post update check on model_number
+# def extract_pure_model_number(val):
+#     if pd.isna(val):
+#         return "NA"
 
-    val = str(val).strip().upper()
+#     val = str(val).strip().upper()
 
-    match = re.findall(r'\b[A-Z]{1,4}[\d]{2,}[A-Z\d\-]*\b', val)
-    if match:
-        return match[-1]
+#     match = re.findall(r'\b[A-Z]{1,4}[\d]{2,}[A-Z\d\-]*\b', val)
+#     if match:
+#         return match[-1]
     
-    return "NA"
-df["model_number"] = df["model_number"].apply(extract_pure_model_number)
+#     return "NA"
+# df["model_number"] = df["model_number"].apply(extract_pure_model_number)
 
 #-------------------------------------------------------------------------------
+
+import re
+import pandas as pd
+
+def clean_and_fix_model_number(row):
+    def clean_model(val):
+        if pd.isna(val):
+            return None
+        val = str(val).strip()
+
+        blacklist = ["casual watch", "watches", "combo", "legacy", "pack", "premium", "design", "men", "women"]
+        val_l = val.lower()
+        if any(x in val_l for x in blacklist) or len(val) <= 3:
+            return None
+
+        # Try to extract the model pattern
+        match = re.search(r'([A-Z]{1,3}[\dA-Z\-\.]{3,})$', val)
+        return match.group(1) if match else None
+
+    # Step 1: Clean existing Model Number
+    model_num = clean_model(row.get("Model Number"))
+    if model_num:
+        return model_num
+
+    # Step 2: Fallback to Part Number
+    part_num = row.get("Part Number")
+    if pd.notna(part_num) and str(part_num).strip():
+        return str(part_num).strip().upper()
+
+    # Step 3: Try extracting from Product Name
+    product_name = row.get("Product Name", "")
+    if pd.notna(product_name):
+        match = re.findall(r'([A-Z]{2,5}[\d]{3,}[A-Z]{0,5})', product_name)
+        if match:
+            return match[0]
+
+    # Step 4: Fallback to "NA"
+    return "NA"
+
+df["Model Number"] = df.apply(clean_and_fix_model_number, axis=1)
+
+#-------------------------------------------------------------------------------------------------------------------
 
 #delete duplicate values with product_name + model_number
 df = df.drop_duplicates(subset=["product_name", "model_number"], keep="first")
