@@ -114,14 +114,15 @@ def enforce_case_insensitivity(sql_query, table_name):
                         fixed_values.append(f"'titan'")
                     else:
                         fixed_values.append(f"'%{v}%'")
-                fixed = f"LOWER({col}) LIKE ANY (ARRAY[{', '.join(fixed_values)}])"
+                if len(fixed_values) == 1:
+                    fixed = f"LOWER({col}) LIKE {fixed_values[0]}"
+                else:
+                    fixed = f"LOWER({col}) LIKE ANY (ARRAY[{', '.join(fixed_values)}])"
             else:
                 fixed = f"LOWER({col}) IN ({', '.join([f'\'{v}\'' for v in values])})"
             sql_query = re.sub(rf"\b{col}\s+IN\s*\([^)]+\)", fixed, sql_query, flags=re.IGNORECASE)
 
     return sql_query
-
-
 
 # ---- Helper Functions ----
 def generate_schema_prompt():
