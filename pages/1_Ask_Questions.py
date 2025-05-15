@@ -249,8 +249,8 @@ col1, col2 = st.columns(2)
 
 with col1:
     st.subheader("🔍 Overview of Result")
-    if st.session_state.query_result is not None:
-        st.dataframe(st.session_state.query_result.head())
+    if st.session_state.query_result is not None and not st.session_state.query_result.empty:
+        st.dataframe(st.session_state.query_result)
 
 with col2:
     st.subheader("📊 Chart Plot")
@@ -287,7 +287,20 @@ if user_input:
             st.session_state.last_sql = sql_query
 
             # ✅ Run the query immediately
-            df_result = pd.read_sql_query(sql_query, engine)
+            # 🧠 Decide what to store
+            if df_result.shape == (1, 1):
+                result_to_store = df_result.iloc[0, 0]
+            else:
+                result_to_store = df_result
+            
+            # ✅ Store it in chat history
+            st.session_state.chat_history.append({
+                "role": "assistant",
+                "content": sql_query,
+                "result": result_to_store
+            })
+            
+            # ✅ Set global preview result (for table view) always
             st.session_state.query_result = df_result
 
             # ✅ Store both SQL + result in chat history
@@ -316,21 +329,48 @@ with chat_container:
                 </div>
                 """, unsafe_allow_html=True
             )
+
         elif msg["role"] == "assistant":
             st.markdown("**Buzz (SQL):**")
             st.code(msg["content"], language="sql")
 
-            # Show stored result, not global one
-            if "count(" in msg["content"].lower():
-                result = msg.get("result")
-                if result is not None:
-                    st.markdown(
-                        f"""
-                        <div style='background-color:#e8f8e4; padding:10px; border-radius:8px; margin-top:-10px;'>
-                            <strong>Buzz(Result):</strong> {result}
-                        </div>
-                        """, unsafe_allow_html=True
-                    )
+            result = msg.get("result")
+
+            # ✅ Case 1: count-style result
+            if isinstance(result, (int, float)):
+                st.markdown(
+                    f"""
+                    <div style='background-color:#e8f8e4; padding:10px; border-radius:8px; margin-top:-10px;'>
+                        <strong>Buzz(Result):</strong> {result}
+                    </div>
+                    """, unsafe_allow_html=True
+                )
+
+            # ✅ Case 2: single-column table (bullet list)
+            elif isinstance(result, pd.DataFrame) and result.shape[1] == 1:
+                col = result.columns[0]
+                values = result[col].dropna().astype(str).tolist()
+                display_values = values[:10]
+                bullet_list = "".join([f"<li>{val}</li>" for val in display_values])
+
+                st.markdown(
+                    f"""
+                    <div style='background-color:#f0fdf4; padding:10px; border-radius:8px; margin-top:-10px;'>
+                        <strong>Buzz({col.title()}s):</strong>
+                        <ul>{bullet_list}</ul>
+                    </div>
+                    """, unsafe_allow_html=True
+                )
+
+                # Show full table in preview only for the latest chat response
+                if i == len(st.session_state.chat_history) - 1 and len(values) > 10:
+                    st.session_state.query_result = result
+
+            # ✅ Case 3: multi-column table → show full table in right panel
+            elif isinstance(result, pd.DataFrame) and result.shape[1] > 1:
+                if i == len(st.session_state.chat_history) - 1:
+                    st.session_state.query_result = result
+
 
 
 # if st.session_state.last_table:
