@@ -274,8 +274,8 @@ if user_input:
             # st.markdown("### 📋 Query Output")
             if len(df_result) == 0:
                 st.info("No results found.")
-            elif df_result.shape[1] == 1:
-                st.success(f"✅ Result: `{df_result.iloc[0,0]}`")
+            # elif df_result.shape[1] == 1:
+            #     st.success(f"✅ Result: `{df_result.iloc[0,0]}`")
             else:
                 st.dataframe(df_result.head())
 
@@ -288,17 +288,38 @@ chat_container = st.container()
 with chat_container:
     for i, msg in enumerate(st.session_state.chat_history):
         if msg["role"] == "user":
-            st.markdown(f"**User:** {msg['content']}")
+            # Highlighted User block
+            st.markdown(
+                f"""
+                <div style='background-color:#e7f3ff; padding:10px; border-radius:8px; margin-bottom:5px;'>
+                    <strong>User:</strong> {msg['content']}
+                </div>
+                """, unsafe_allow_html=True
+            )
         elif msg["role"] == "assistant":
             st.markdown("**Buzz (SQL):**")
-            st.code(msg['content'], language="sql")
-            # Output display if it's a count query
+            st.code(msg["content"], language="sql")
+
+            # Result block only if it's a count query
             if "count(" in msg["content"].lower():
                 try:
                     result = st.session_state.query_result.iloc[0, 0]
-                    st.markdown(f"**Buzz(Result):** {result}")
+                    st.markdown(
+                        f"""
+                        <div style='background-color:#e8f8e4; padding:10px; border-radius:8px; margin-top:-10px;'>
+                            <strong>Buzz(Result):</strong> {result}
+                        </div>
+                        """, unsafe_allow_html=True
+                    )
                 except:
-                    st.markdown(f"**Buzz(Result):** (error reading output)")
+                    st.markdown(
+                        f"""
+                        <div style='background-color:#ffe4e4; padding:10px; border-radius:8px; margin-top:-10px;'>
+                            <strong>Buzz(Result):</strong> (error reading output)
+                        </div>
+                        """, unsafe_allow_html=True
+                    )
+
 
 # if st.session_state.last_table:
 #     st.caption(f"📌 Last table used: `{st.session_state.last_table}`")
