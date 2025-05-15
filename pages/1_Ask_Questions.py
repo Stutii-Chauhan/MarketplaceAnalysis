@@ -283,7 +283,6 @@ if user_input:
             })
 
             # Show current query result immediately
-            st.markdown("### 📋 Query Output")
             if len(df_result) == 0:
                 st.info("No results found.")
             elif df_result.shape[1] == 1:
@@ -303,7 +302,6 @@ if user_input:
 # ---- Chat History Threaded View ----
 chat_container = st.container()
 with chat_container:
-    st.markdown("### 🧠 Conversation History")
     for msg in st.session_state.chat_history:
         if msg["role"] == "user":
             st.markdown(f"**You:** {msg['content']}")
@@ -315,5 +313,5 @@ with chat_container:
                 elif msg["result"] is not None:
                     st.markdown(f"**Buzz (Result):** {msg['result']}")
 
-if st.session_state.last_table:
-    st.caption(f"📌 Last table used: `{st.session_state.last_table}`")
+# if st.session_state.last_table:
+#     st.caption(f"📌 Last table used: `{st.session_state.last_table}`")
