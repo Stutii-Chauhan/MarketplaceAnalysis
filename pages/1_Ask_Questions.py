@@ -113,6 +113,7 @@ def generate_schema_prompt():
     ])
 
 def generate_sql_with_context(chat_history):
+def generate_sql_with_context(chat_history):
     context = "\n".join([f"{msg['role']}: {msg['content']}" for msg in chat_history])
     table_guidance = """
 Use these rules to choose the correct table and columns:
@@ -190,7 +191,21 @@ Only return the SQL. Do not explain.
     try:
         response = model.generate_content(prompt)
         sql = response.text.strip().split("```sql")[-1].strip("```").strip()
+
+        #Fix smart quotes and EN DASH
+        sql = (
+            sql
+            .replace("–", "-")  # EN DASH → hyphen
+            .replace("‘", "'").replace("’", "'")
+            .replace("“", '"').replace("”", '"')
+        )
+
+        # Detect table and apply case-insensitive fix
+        table_name = detect_table_name(sql)
+        sql = enforce_case_insensitivity(sql, table_name)
+
         return sql
+
     except Exception as e:
         return f"Gemini failed: {e}"
 
