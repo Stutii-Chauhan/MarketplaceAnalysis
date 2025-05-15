@@ -276,8 +276,8 @@ if user_input:
                 st.info("No results found.")
             # elif df_result.shape[1] == 1:
             #     st.success(f"✅ Result: `{df_result.iloc[0,0]}`")
-            else:
-                st.dataframe(df_result.head())
+            # else:
+            #     st.dataframe(df_result.head())
 
         except Exception as e:
             st.error(f"❌ Failed to execute query: {e}")
