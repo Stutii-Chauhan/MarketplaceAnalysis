@@ -88,22 +88,39 @@ def enforce_case_insensitivity(sql_query, table_name):
     text_columns = [col for col, dtype in TABLE_SCHEMAS[table_name].items() if dtype == "text"]
 
     for col in text_columns:
-        # Equality match: column = 'value'
+        # ---- Equality match: column = 'value'
         pattern = rf"\b{col}\s*=\s*'([^']+)'"
         matches = re.findall(pattern, sql_query, flags=re.IGNORECASE)
         for match in matches:
-            fixed = f"LOWER({col}) = '{match.lower()}'"
+            value_lower = match.lower().strip()
+            if col == "brand":
+                if value_lower == "titan":
+                    fixed = f"LOWER({col}) = 'titan'"
+                else:
+                    fixed = f"LOWER({col}) LIKE '%{value_lower}%'"
+            else:
+                fixed = f"LOWER({col}) = '{value_lower}'"
             sql_query = re.sub(rf"\b{col}\s*=\s*'[^']+'", fixed, sql_query, flags=re.IGNORECASE)
 
-        # IN clause: column IN ('A', 'B')
+        # ---- IN clause: column IN ('A', 'B')
         pattern_in = rf"\b{col}\s+IN\s*\(([^)]+)\)"
         matches_in = re.findall(pattern_in, sql_query, flags=re.IGNORECASE)
         for match in matches_in:
             values = [v.strip().strip("'").strip('"').lower() for v in match.split(",")]
-            fixed = f"LOWER({col}) IN ({', '.join([f'\'{v}\'' for v in values])})"
+            if col == "brand":
+                fixed_values = []
+                for v in values:
+                    if v == "titan":
+                        fixed_values.append(f"'titan'")
+                    else:
+                        fixed_values.append(f"'%{v}%'")
+                fixed = f"LOWER({col}) LIKE ANY (ARRAY[{', '.join(fixed_values)}])"
+            else:
+                fixed = f"LOWER({col}) IN ({', '.join([f'\'{v}\'' for v in values])})"
             sql_query = re.sub(rf"\b{col}\s+IN\s*\([^)]+\)", fixed, sql_query, flags=re.IGNORECASE)
 
     return sql_query
+
 
 
 # ---- Helper Functions ----
@@ -168,6 +185,9 @@ If the user's query contains materials (e.g., "stainless steel", "leather", "rub
 
 Text based filters:
 - The text columns are stored in sentence case always. Follow this while writing queries.
+
+Brand based filters:
+- If user's query contain raga, map to Titan Raga, Edge: Titan Edge, Xylys:Titan Xylys
 
 Follow-Up Handling:
 - For follow-up questions, retain previously used filters or table if the user does not explicitly change them.
