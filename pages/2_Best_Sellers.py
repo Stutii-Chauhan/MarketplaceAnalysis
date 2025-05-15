@@ -54,9 +54,30 @@ def render_best_sellers(gender):
         if st.sidebar.checkbox(band, key=f"price_band_{band}"):
             selected_priceband.append(band)
 
-    # 2. Price Range Slider
+    # 2. Price Range Slider + Input
     price_min, price_max = int(df["price"].min()), int(df["price"].max())
-    selected_price = st.sidebar.slider("Price Range", price_min, price_max, (price_min, price_max))
+    
+    # Create two columns for number inputs
+    col_min, col_max = st.sidebar.columns(2)
+    min_input = col_min.number_input("Min ₹", value=price_min, step=100, key="min_price_input")
+    max_input = col_max.number_input("Max ₹", value=price_max, step=100, key="max_price_input")
+    
+    # Ensure min < max always
+    if min_input > max_input:
+        st.sidebar.error("⚠️ Min price cannot be greater than max price.")
+    
+    # Optional: slider still shown, synced to input
+    selected_price = st.sidebar.slider(
+        "Price Range", 
+        price_min, price_max, 
+        (min_input, max_input), 
+        step=100,
+        key="price_slider"
+    )
+
+
+
+    
 
     # 3. Brand
     df["brand"] = df["brand"].str.strip().str.lower().str.title()
