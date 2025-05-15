@@ -316,47 +316,21 @@ with chat_container:
                 </div>
                 """, unsafe_allow_html=True
             )
-
         elif msg["role"] == "assistant":
             st.markdown("**Buzz (SQL):**")
             st.code(msg["content"], language="sql")
 
-            result = msg.get("result")
-
-            # Case 1: Single numeric result
-            if isinstance(result, (int, float)):
-                st.markdown(
-                    f"""
-                    <div style='background-color:#e8f8e4; padding:10px; border-radius:8px; margin-top:-10px;'>
-                        <strong>Buzz(Result):</strong> {result}
-                    </div>
-                    """, unsafe_allow_html=True
-                )
-
-            # Case 2: Single-column table
-            elif isinstance(result, pd.DataFrame) and result.shape[1] == 1:
-                col = result.columns[0]
-                values = result[col].dropna().astype(str).tolist()
-                bullet_values = values[:10]
-                bullet_list = "".join([f"<li>{val}</li>" for val in bullet_values])
-
-                st.markdown(
-                    f"""
-                    <div style='background-color:#f0fdf4; padding:10px; border-radius:8px; margin-top:-10px;'>
-                        <strong>Buzz({col.title()}s):</strong>
-                        <ul>{bullet_list}</ul>
-                    </div>
-                    """, unsafe_allow_html=True
-                )
-
-                # Store full preview only for latest message
-                if i == len(st.session_state.chat_history) - 1 and len(values) > 10:
-                    st.session_state.query_result = result
-
-            # Case 3: Multi-column table
-            elif isinstance(result, pd.DataFrame) and result.shape[1] > 1:
-                if i == len(st.session_state.chat_history) - 1:
-                    st.session_state.query_result = result
+            # Show stored result, not global one
+            if "count(" in msg["content"].lower():
+                result = msg.get("result")
+                if result is not None:
+                    st.markdown(
+                        f"""
+                        <div style='background-color:#e8f8e4; padding:10px; border-radius:8px; margin-top:-10px;'>
+                            <strong>Buzz(Result):</strong> {result}
+                        </div>
+                        """, unsafe_allow_html=True
+                    )
 
 
 # if st.session_state.last_table:
