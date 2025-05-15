@@ -265,34 +265,31 @@ if user_input:
         try:
             sql_query = generate_sql_with_context(st.session_state.chat_history)
             sql_query = sql_query.replace("–", "-").replace("‘", "'").replace("’", "'").replace("“", '"').replace("”", '"')
-            st.session_state.chat_history.append({"role": "assistant", "content": sql_query})
             st.session_state.last_sql = sql_query
 
             # ✅ Run the query immediately
             df_result = pd.read_sql_query(sql_query, engine)
             st.session_state.query_result = df_result
 
+            # ✅ Store both SQL + result in chat history
+            st.session_state.chat_history.append({
+                "role": "assistant",
+                "content": sql_query,
+                "result": df_result.iloc[0, 0] if df_result.shape == (1, 1) else None
+            })
 
-
-            # ✅ Show preview immediately
-            # st.markdown("### 📋 Query Output")
+            # ✅ Optional: no preview below input
             if len(df_result) == 0:
                 st.info("No results found.")
-            # elif df_result.shape[1] == 1:
-            #     st.success(f"✅ Result: `{df_result.iloc[0,0]}`")
-            # else:
-            #     st.dataframe(df_result.head())
 
         except Exception as e:
             st.error(f"❌ Failed to execute query: {e}")
 
-
-# st.markdown("### 🧠 Chat History")
+# ---- Chat History Display ----
 chat_container = st.container()
 with chat_container:
     for i, msg in enumerate(st.session_state.chat_history):
         if msg["role"] == "user":
-            # Highlighted User block
             st.markdown(
                 f"""
                 <div style='background-color:#e7f3ff; padding:10px; border-radius:8px; margin-bottom:5px;'>
@@ -304,22 +301,14 @@ with chat_container:
             st.markdown("**Buzz (SQL):**")
             st.code(msg["content"], language="sql")
 
-            # Result block only if it's a count query
+            # Show stored result, not global one
             if "count(" in msg["content"].lower():
-                try:
-                    result = st.session_state.query_result.iloc[0, 0]
+                result = msg.get("result")
+                if result is not None:
                     st.markdown(
                         f"""
                         <div style='background-color:#e8f8e4; padding:10px; border-radius:8px; margin-top:-10px;'>
                             <strong>Buzz(Result):</strong> {result}
-                        </div>
-                        """, unsafe_allow_html=True
-                    )
-                except:
-                    st.markdown(
-                        f"""
-                        <div style='background-color:#ffe4e4; padding:10px; border-radius:8px; margin-top:-10px;'>
-                            <strong>Buzz(Result):</strong> (error reading output)
                         </div>
                         """, unsafe_allow_html=True
                     )
