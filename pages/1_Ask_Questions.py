@@ -271,7 +271,7 @@ if user_input:
 
 
             # ✅ Show preview immediately
-            st.markdown("### 📋 Query Output")
+            # st.markdown("### 📋 Query Output")
             if len(df_result) == 0:
                 st.info("No results found.")
             elif df_result.shape[1] == 1:
@@ -290,7 +290,8 @@ with chat_container:
         if msg["role"] == "user":
             st.markdown(f"**User:** {msg['content']}")
         elif msg["role"] == "assistant":
-            st.markdown(f"**Buzz (SQL):** ```sql\n{msg['content']}\n```")
+            st.markdown("**Buzz (SQL):**")
+            st.code(msg['content'], language="sql")
             # Output display if it's a count query
             if "count(" in msg["content"].lower():
                 try:
