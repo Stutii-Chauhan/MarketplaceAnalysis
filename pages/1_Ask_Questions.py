@@ -275,9 +275,12 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-user_input = st.text_input("Ask your question here", key="chat_input")
+# ✅ Use a form to submit new input only once
+with st.form("chat_form", clear_on_submit=True):
+    user_input = st.text_input("Ask your question here", key="chat_input_internal")
+    submitted = st.form_submit_button("Send")
 
-if user_input:
+if submitted and user_input:
     st.session_state.chat_history.append({"role": "user", "content": user_input})
     
     with st.spinner("Buzz is thinking..."):
@@ -289,25 +292,24 @@ if user_input:
             # ✅ Run the SQL query
             df_result = pd.read_sql_query(sql_query, engine)
 
-            # ✅ Determine result shape
+            # ✅ Always store as DataFrame
             result_to_store = df_result
 
-            # ✅ Save assistant response with SQL + result
+            # ✅ Save assistant response
             st.session_state.chat_history.append({
                 "role": "assistant",
                 "content": sql_query,
                 "result": result_to_store
             })
 
-            # ✅ Set global table preview (used in overview/chart)
-            #st.session_state.query_result = df_result
+            # ❗ DO NOT set query_result here — it’s done after chat loop
 
-            # ✅ Optional: notify for empty table
-            if len(df_result) == 0:
+            if df_result.empty:
                 st.info("No results found.")
 
         except Exception as e:
             st.error(f"❌ Failed to execute query: {e}")
+
 
 
 # ---- Chat History Display ----
