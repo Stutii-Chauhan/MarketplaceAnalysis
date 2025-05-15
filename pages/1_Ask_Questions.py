@@ -310,37 +310,61 @@ if user_input:
             st.error(f"❌ Failed to execute query: {e}")
 
 
-if user_input:
-    st.session_state.chat_history.append({"role": "user", "content": user_input})
+# ---- Chat History Display ----
+chat_container = st.container()
+with chat_container:
+    for i, msg in enumerate(st.session_state.chat_history):
+        if msg["role"] == "user":
+            st.markdown(
+                f"""
+                <div style='background-color:#e7f3ff; padding:10px; border-radius:8px; margin-bottom:5px;'>
+                    <strong>User:</strong> {msg['content']}
+                </div>
+                """, unsafe_allow_html=True
+            )
 
-    with st.spinner("Buzz is thinking..."):
-        try:
-            sql_query = generate_sql_with_context(st.session_state.chat_history)
-            sql_query = sql_query.replace("–", "-").replace("‘", "'").replace("’", "'").replace("“", '"').replace("”", '"')
-            st.session_state.last_sql = sql_query
+        elif msg["role"] == "assistant":
+            st.markdown("**Buzz (SQL):**")
+            st.code(msg["content"], language="sql")
 
-            df_result = pd.read_sql_query(sql_query, engine)
+            result = msg.get("result")
 
-            # ✅ ALWAYS store the full DataFrame
-            result_to_store = df_result
+            # ✅ Case 1: 1x1 DataFrame (e.g., COUNT(*))
+            if isinstance(result, pd.DataFrame) and result.shape == (1, 1):
+                value = result.iloc[0, 0]
+                st.markdown(
+                    f"""
+                    <div style='background-color:#e8f8e4; padding:10px; border-radius:8px; margin-top:-10px;'>
+                        <strong>Buzz (Result):</strong> {value}
+                    </div>
+                    """, unsafe_allow_html=True
+                )
+                if i == len(st.session_state.chat_history) - 1:
+                    st.session_state.query_result = result
 
-            # ✅ Save SQL and result to chat
-            st.session_state.chat_history.append({
-                "role": "assistant",
-                "content": sql_query,
-                "result": result_to_store
-            })
+            # ✅ Case 2: DataFrame with 1 column
+            elif isinstance(result, pd.DataFrame) and result.shape[1] == 1:
+                col = result.columns[0]
+                values = result[col].dropna().astype(str).tolist()
+                bullet_values = values[:10]
+                bullets_html = "".join([f"<li>{val}</li>" for val in bullet_values])
 
-            # Optional: warning for no data
-            if df_result.empty:
-                st.info("No results found.")
+                st.markdown(
+                    f"""
+                    <div style='background-color:#f0fdf4; padding:10px; border-radius:8px; margin-top:-10px;'>
+                        <strong>Buzz ({col.title()}s):</strong>
+                        <ul>{bullets_html}</ul>
+                    </div>
+                    """, unsafe_allow_html=True
+                )
 
-        except Exception as e:
-            st.error(f"❌ Failed to execute query: {e}")
+                if i == len(st.session_state.chat_history) - 1:
+                    st.session_state.query_result = result
 
-
-
-
+            # ✅ Case 3: DataFrame with >1 column
+            elif isinstance(result, pd.DataFrame) and result.shape[1] > 1:
+                if i == len(st.session_state.chat_history) - 1:
+                    st.session_state.query_result = result
 
 # if st.session_state.last_table:
 #     st.caption(f"📌 Last table used: `{st.session_state.last_table}`")
