@@ -250,9 +250,13 @@ with col2:
 
 # ---- Chat Interface ----
 st.markdown("---")
-st.subheader("💬 Chat with Marketplace Analyzer")
+st.markdown("""
+<div style='background-color:#f0f2f6; padding: 20px; border-radius: 10px; margin-bottom: 30px;'>
+    <h3 style='margin-bottom: 10px;'>💬 Chat with Marketplace Analyzer</h3>
+</div>
+""", unsafe_allow_html=True)
 
-user_input = st.text_input("Ask a question about your data")
+user_input = st.text_input("Ask your question here", key="chat_input")
 
 if user_input:
     st.session_state.chat_history.append({"role": "user", "content": user_input})
