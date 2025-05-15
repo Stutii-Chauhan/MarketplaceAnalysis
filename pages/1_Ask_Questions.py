@@ -285,32 +285,30 @@ if user_input:
             sql_query = generate_sql_with_context(st.session_state.chat_history)
             sql_query = sql_query.replace("–", "-").replace("‘", "'").replace("’", "'").replace("“", '"').replace("”", '"')
             st.session_state.last_sql = sql_query
-
-            # ✅ Run the SQL query
+        
+            # ✅ Run query
             df_result = pd.read_sql_query(sql_query, engine)
-
-            # ✅ Determine result shape
+        
+            # ✅ Store result in chat after query succeeds
             if df_result.shape == (1, 1):
                 result_to_store = df_result.iloc[0, 0]
             else:
                 result_to_store = df_result
-
-            # ✅ Save assistant response with SQL + result
+        
             st.session_state.chat_history.append({
                 "role": "assistant",
                 "content": sql_query,
                 "result": result_to_store
             })
-
-            # ✅ Set global table preview (used in overview/chart)
+        
             st.session_state.query_result = df_result
-
-            # ✅ Optional: notify for empty table
+        
             if len(df_result) == 0:
                 st.info("No results found.")
-
+        
         except Exception as e:
             st.error(f"❌ Failed to execute query: {e}")
+
 
 
 # ---- Chat History Display ----
