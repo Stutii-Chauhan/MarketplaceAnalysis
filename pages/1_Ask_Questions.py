@@ -1,3 +1,4 @@
+
 import streamlit as st
 import pandas as pd
 import google.generativeai as genai
@@ -329,47 +330,43 @@ with chat_container:
         elif msg["role"] == "assistant":
             st.markdown("**Buzz (SQL):**")
             st.code(msg["content"], language="sql")
-        
+
             result = msg.get("result")
-            show_in_preview = False
-        
-            # ✅ Case 1: Single scalar value (e.g., count)
+
+            # ✅ Case 1: count-style result
             if isinstance(result, (int, float)):
                 st.markdown(
                     f"""
                     <div style='background-color:#e8f8e4; padding:10px; border-radius:8px; margin-top:-10px;'>
-                        <strong>Buzz (Result):</strong> {result}
+                        <strong>Buzz(Result):</strong> {result}
                     </div>
                     """, unsafe_allow_html=True
                 )
-                if i == len(st.session_state.chat_history) - 1:
-                    # Set preview to a DataFrame with one cell
-                    st.session_state.query_result = pd.DataFrame([[result]], columns=["Result"])
-        
-            # ✅ Case 2: DataFrame with 1 column
+
+            # ✅ Case 2: single-column table (bullet list)
             elif isinstance(result, pd.DataFrame) and result.shape[1] == 1:
                 col = result.columns[0]
                 values = result[col].dropna().astype(str).tolist()
-                bullet_values = values[:10]
-                bullets_html = "".join([f"<li>{val}</li>" for val in bullet_values])
-        
+                display_values = values[:10]
+                bullet_list = "".join([f"<li>{val}</li>" for val in display_values])
+
                 st.markdown(
                     f"""
                     <div style='background-color:#f0fdf4; padding:10px; border-radius:8px; margin-top:-10px;'>
-                        <strong>Buzz ({col.title()}s):</strong>
-                        <ul>{bullets_html}</ul>
+                        <strong>Buzz({col.title()}s):</strong>
+                        <ul>{bullet_list}</ul>
                     </div>
                     """, unsafe_allow_html=True
                 )
-        
-                if i == len(st.session_state.chat_history) - 1:
+
+                # Show full table in preview only for the latest chat response
+                if i == len(st.session_state.chat_history) - 1 and len(values) > 10:
                     st.session_state.query_result = result
-        
-            # ✅ Case 3: DataFrame with >1 column
+
+            # ✅ Case 3: multi-column table → show full table in right panel
             elif isinstance(result, pd.DataFrame) and result.shape[1] > 1:
                 if i == len(st.session_state.chat_history) - 1:
                     st.session_state.query_result = result
-
 
 
 
