@@ -316,21 +316,45 @@ with chat_container:
                 </div>
                 """, unsafe_allow_html=True
             )
+
         elif msg["role"] == "assistant":
             st.markdown("**Buzz (SQL):**")
             st.code(msg["content"], language="sql")
 
-            # Show stored result, not global one
-            if "count(" in msg["content"].lower():
-                result = msg.get("result")
-                if result is not None:
-                    st.markdown(
-                        f"""
-                        <div style='background-color:#e8f8e4; padding:10px; border-radius:8px; margin-top:-10px;'>
-                            <strong>Buzz(Result):</strong> {result}
-                        </div>
-                        """, unsafe_allow_html=True
-                    )
+            result = msg.get("result")
+
+            # Case 1: count-style result (number)
+            if isinstance(result, (int, float)):
+                st.markdown(
+                    f"""
+                    <div style='background-color:#e8f8e4; padding:10px; border-radius:8px; margin-top:-10px;'>
+                        <strong>Buzz(Result):</strong> {result}
+                    </div>
+                    """, unsafe_allow_html=True
+                )
+
+            # Case 2: table with 1 column → show bullets (first 10), preview full if > 10
+            elif isinstance(result, pd.DataFrame) and result.shape[1] == 1:
+                col = result.columns[0]
+                values = result[col].dropna().astype(str).tolist()
+                display_values = values[:10]
+                bullet_list = "".join([f"<li>{val}</li>" for val in display_values])
+
+                st.markdown(
+                    f"""
+                    <div style='background-color:#f0fdf4; padding:10px; border-radius:8px; margin-top:-10px;'>
+                        <strong>Buzz({col.title()}s):</strong>
+                        <ul>{bullet_list}</ul>
+                    </div>
+                    """, unsafe_allow_html=True
+                )
+
+                if len(values) > 10:
+                    st.session_state.query_result = result
+
+            # Case 3: table with > 1 column → just show in preview
+            elif isinstance(result, pd.DataFrame) and result.shape[1] > 1:
+                st.session_state.query_result = result
 
 
 # if st.session_state.last_table:
