@@ -303,7 +303,7 @@ if user_input:
             })
 
             # ✅ Set global table preview (used in overview/chart)
-            st.session_state.query_result = df_result
+            #st.session_state.query_result = df_result
 
             # ✅ Optional: notify for empty table
             if len(df_result) == 0:
