@@ -152,7 +152,6 @@ Price Range logic:
 - Do not use numeric BETWEEN for price when price_band exists
 - "-" in  "10k–15k", "15k–25k", "25k–40k" is hyphen and not dash
 
-
 Table Selection Rules:
 - Use `scraped_data_cleaned` for all general queries unless best sellers are explicitly mentioned.
 - Use `final_watch_dataset_men_output_rows` if the question refers to best sellers for men.
@@ -165,6 +164,9 @@ If the user's query contains materials (e.g., "stainless steel", "leather", "rub
 - Use `case_material` if it includes "case", "body", or "watch material"
 - Use `crystal_material` if it includes "crystal", "glass", "sapphire", or "mineral"
 - If no body part is specified, default to `case_material`
+
+Text based filters:
+- The text columns are stored in sentence case always. Follow this while writing queries.
 
 Follow-Up Handling:
 - For follow-up questions, retain previously used filters or table if the user does not explicitly change them.
