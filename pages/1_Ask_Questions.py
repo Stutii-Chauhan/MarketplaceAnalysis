@@ -244,54 +244,76 @@ with col2:
 
 # ---- Chat Interface ----
 st.markdown("---")
-st.subheader("💬 Chat with Marketplace Analyzer")
+st.subheader("💬 Chat with Buzz")
 
 user_input = st.text_input("Ask a question about your data")
 
 if user_input:
+    # Save user message
     st.session_state.chat_history.append({"role": "user", "content": user_input})
-    
+
     with st.spinner("Buzz is thinking..."):
         try:
+            # Generate and clean SQL
             sql_query = generate_sql_with_context(st.session_state.chat_history)
-            sql_query = sql_query.replace("–", "-").replace("‘", "'").replace("’", "'").replace("“", '"').replace("”", '"')
-            st.session_state.chat_history.append({"role": "assistant", "content": sql_query})
-            st.session_state.last_sql = sql_query
+            sql_query = (
+                sql_query
+                .replace("–", "-")
+                .replace("‘", "'").replace("’", "'")
+                .replace("“", '"').replace("”", '"')
+            )
 
-            # ✅ Run the query immediately
+            table_name = detect_table_name(sql_query)
+            sql_query = enforce_case_insensitivity(sql_query, table_name)
+
+            st.session_state.last_sql = sql_query
+            st.session_state.last_table = table_name
+
+            # Execute the query
             df_result = pd.read_sql_query(sql_query, engine)
             st.session_state.query_result = df_result
 
+            # Save Buzz SQL + result in chat history
+            st.session_state.chat_history.append({
+                "role": "assistant",
+                "content": sql_query,
+                "result": (
+                    df_result.iloc[0, 0] if df_result.shape == (1, 1) else df_result.head()
+                )
+            })
 
-
-            # ✅ Show preview immediately
+            # Show current query result immediately
             st.markdown("### 📋 Query Output")
             if len(df_result) == 0:
                 st.info("No results found.")
             elif df_result.shape[1] == 1:
-                st.success(f"✅ Result: `{df_result.iloc[0,0]}`")
+                st.success(f"✅ Result: `{df_result.iloc[0, 0]}`")
             else:
                 st.dataframe(df_result.head())
 
         except Exception as e:
+            st.session_state.chat_history.append({
+                "role": "assistant",
+                "content": f"ERROR: {e}",
+                "result": None
+            })
             st.error(f"❌ Failed to execute query: {e}")
 
 
+# ---- Chat History Threaded View ----
 chat_container = st.container()
 with chat_container:
+    st.markdown("### 🧠 Conversation History")
     for msg in st.session_state.chat_history:
         if msg["role"] == "user":
             st.markdown(f"**You:** {msg['content']}")
         elif msg["role"] == "assistant":
-            st.markdown(f"**Buzz:** `{msg['content']}`")  # SQL
-
-            # If there's a result stored, show it
+            st.markdown(f"**Buzz (SQL):** `{msg['content']}`")
             if "result" in msg:
                 if isinstance(msg["result"], pd.DataFrame):
                     st.dataframe(msg["result"])
-                else:
-                    st.markdown(f"**Buzz:** {msg['result']}")
-
+                elif msg["result"] is not None:
+                    st.markdown(f"**Buzz (Result):** {msg['result']}")
 
 if st.session_state.last_table:
-    st.caption(f"Last table used: `{st.session_state.last_table}`")
+    st.caption(f"📌 Last table used: `{st.session_state.last_table}`")
