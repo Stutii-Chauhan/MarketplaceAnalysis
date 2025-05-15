@@ -323,7 +323,7 @@ with chat_container:
 
             result = msg.get("result")
 
-            # Case 1: count-style result (number)
+            # Case 1: Single numeric result
             if isinstance(result, (int, float)):
                 st.markdown(
                     f"""
@@ -333,12 +333,12 @@ with chat_container:
                     """, unsafe_allow_html=True
                 )
 
-            # Case 2: table with 1 column → show bullets (first 10), preview full if > 10
+            # Case 2: Single-column table
             elif isinstance(result, pd.DataFrame) and result.shape[1] == 1:
                 col = result.columns[0]
                 values = result[col].dropna().astype(str).tolist()
-                display_values = values[:10]
-                bullet_list = "".join([f"<li>{val}</li>" for val in display_values])
+                bullet_values = values[:10]
+                bullet_list = "".join([f"<li>{val}</li>" for val in bullet_values])
 
                 st.markdown(
                     f"""
@@ -349,12 +349,14 @@ with chat_container:
                     """, unsafe_allow_html=True
                 )
 
-                if len(values) > 10:
+                # Store full preview only for latest message
+                if i == len(st.session_state.chat_history) - 1 and len(values) > 10:
                     st.session_state.query_result = result
 
-            # Case 3: table with > 1 column → just show in preview
+            # Case 3: Multi-column table
             elif isinstance(result, pd.DataFrame) and result.shape[1] > 1:
-                st.session_state.query_result = result
+                if i == len(st.session_state.chat_history) - 1:
+                    st.session_state.query_result = result
 
 
 # if st.session_state.last_table:
