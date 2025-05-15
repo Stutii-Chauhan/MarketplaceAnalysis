@@ -1,4 +1,3 @@
-
 import streamlit as st
 import pandas as pd
 import google.generativeai as genai
@@ -250,8 +249,8 @@ col1, col2 = st.columns(2)
 
 with col1:
     st.subheader("🔍 Overview of Result")
-    if st.session_state.query_result is not None and not st.session_state.query_result.empty:
-        st.dataframe(st.session_state.query_result)
+    if st.session_state.query_result is not None:
+        st.dataframe(st.session_state.query_result.head())
 
 with col2:
     st.subheader("📊 Chart Plot")
@@ -287,32 +286,23 @@ if user_input:
             sql_query = sql_query.replace("–", "-").replace("‘", "'").replace("’", "'").replace("“", '"').replace("”", '"')
             st.session_state.last_sql = sql_query
 
-            # ✅ Run the SQL query
+            # ✅ Run the query immediately
             df_result = pd.read_sql_query(sql_query, engine)
+            st.session_state.query_result = df_result
 
-            # ✅ Determine result shape
-            if df_result.shape == (1, 1):
-                result_to_store = df_result.iloc[0, 0]
-            else:
-                result_to_store = df_result
-
-            # ✅ Save assistant response with SQL + result
+            # ✅ Store both SQL + result in chat history
             st.session_state.chat_history.append({
                 "role": "assistant",
                 "content": sql_query,
-                "result": result_to_store
+                "result": df_result.iloc[0, 0] if df_result.shape == (1, 1) else None
             })
 
-            # ✅ Set global table preview (used in overview/chart)
-            st.session_state.query_result = df_result
-
-            # ✅ Optional: notify for empty table
+            # ✅ Optional: no preview below input
             if len(df_result) == 0:
                 st.info("No results found.")
 
         except Exception as e:
             st.error(f"❌ Failed to execute query: {e}")
-
 
 # ---- Chat History Display ----
 chat_container = st.container()
@@ -333,7 +323,7 @@ with chat_container:
 
             result = msg.get("result")
 
-            # ✅ Case 1: count-style result
+            # Case 1: count-style result (number)
             if isinstance(result, (int, float)):
                 st.markdown(
                     f"""
@@ -343,7 +333,7 @@ with chat_container:
                     """, unsafe_allow_html=True
                 )
 
-            # ✅ Case 2: single-column table (bullet list)
+            # Case 2: table with 1 column → show bullets (first 10), preview full if > 10
             elif isinstance(result, pd.DataFrame) and result.shape[1] == 1:
                 col = result.columns[0]
                 values = result[col].dropna().astype(str).tolist()
@@ -359,15 +349,12 @@ with chat_container:
                     """, unsafe_allow_html=True
                 )
 
-                # Show full table in preview only for the latest chat response
-                if i == len(st.session_state.chat_history) - 1 and len(values) > 10:
+                if len(values) > 10:
                     st.session_state.query_result = result
 
-            # ✅ Case 3: multi-column table → show full table in right panel
+            # Case 3: table with > 1 column → just show in preview
             elif isinstance(result, pd.DataFrame) and result.shape[1] > 1:
-                if i == len(st.session_state.chat_history) - 1:
-                    st.session_state.query_result = result
-
+                st.session_state.query_result = result
 
 
 # if st.session_state.last_table:
