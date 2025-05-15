@@ -304,7 +304,7 @@ chat_container = st.container()
 with chat_container:
     for msg in st.session_state.chat_history:
         if msg["role"] == "user":
-            st.markdown(f"**You:** {msg['content']}")
+            st.markdown(f"**User:** {msg['content']}")
         elif msg["role"] == "assistant":
             st.markdown(f"**Buzz (SQL):** `{msg['content']}`")
             if "result" in msg:
