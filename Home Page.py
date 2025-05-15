@@ -3,7 +3,7 @@ import streamlit as st
 # --- Page Config ---
 st.set_page_config(page_title="MarketBuzz", layout="wide")
 
-logo_url = "https://github.com/Stutii-Chauhan/MarketplaceAnalysis/blob/f5af9c1362284e88f145eb8b278b0537f10f1904/titan%20logo.png"
+logo_url = "https://github.com/Stutii-Chauhan/MarketplaceAnalysis/raw/main/titan%20logo.png"
 
 logo_html = f"""
 <style>
