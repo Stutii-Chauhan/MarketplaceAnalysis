@@ -148,6 +148,8 @@ df["rating(out_of_5)"] = df["rating(out_of_5)"].apply(extract_custom_rating)
 # ✅ Replace NaN with 0.0 instead of "NA"
 df["rating(out_of_5)"] = df["rating(out_of_5)"].fillna(0.0)
 
+df.rename(columns={"rating(out_of_5)": "ratings"}, inplace=True)
+
 #----------------------------------------------------------------
 
 #adding price_band
@@ -168,6 +170,7 @@ df["discount_(%)"] = (
     .astype(float)                  # Keep it float
 )
 df["discount_(%)"] = df["discount_(%)"].fillna(0.0)
+df.rename(columns={"discount_(%)": "discount_percentage"}, inplace=True)
 
 #----------------------------------------------------------------
 
