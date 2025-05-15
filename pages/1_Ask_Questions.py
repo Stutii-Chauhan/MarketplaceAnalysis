@@ -145,13 +145,19 @@ This is the master table with full product listings. Column descriptions:
 - "as_of_date" — when the data was last loaded
 
 Price Range logic:
-- If the user's question includes price bands like "10k–15k", "15k–25k", "25k–40k", or "40k+", refer to the `price_band` column instead of using numeric price ranges.
-- Match `price_band` = '10K–15K' for 10000–15000
-- Match `price_band` = '15K–25K' for 15000–25000
-- Match `price_band` = '25K–40K' for 25000–40000
-- Match `price_band` = '40K+' for 40000 and above
-- Do not use numeric BETWEEN for price when price_band exists
-- "-" in  "10k–15k", "15k–25k", "25k–40k" is hyphen and not dash
+- There are two types of price references in user queries:
+  1. **Predefined Price Bands** → Use the `price_band` column
+     - Examples: "10K–15K", "15K–25K", "25K–40K", "40K+" (these are exact predefined bands)
+     - Match using: LOWER(price_band) = '10k–15k' etc.
+  2. **Custom Price Filters** → Use the numeric `price` column
+     - Examples: "below 12000", "between 10k and 12k", "under 18k", "greater than 25k", "less than 9500"
+     - Interpret "K" or "k" as 1000 (e.g., 10k = 10000)
+     - Use SQL filters like: `price BETWEEN 10000 AND 12000`, `price < 18000`, etc.
+
+- Important:
+  - Only use `price_band` if the exact band like '10K–15K' is clearly mentioned.
+  - If the price range is custom or approximate (like “under 10k” or “between 8k and 12k”), use the numeric `price` column.
+  - Convert “10k”, “25K” etc. to thousands: 10k = 10000
 
 Table Selection Rules:
 - Use `scraped_data_cleaned` for all general queries unless best sellers are explicitly mentioned.
