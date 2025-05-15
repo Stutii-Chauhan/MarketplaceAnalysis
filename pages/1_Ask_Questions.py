@@ -175,29 +175,29 @@ If the user's query contains materials (e.g., "stainless steel", "leather", "rub
 Text based filters:
 - The text columns are stored in sentence case always. Follow this while writing queries.
 
-Brand Matching Logic:
+# Brand Matching Logic:
 
-- The `brand` column contains names like:
-  - "titan", "titan raga", "titan edge", "titan xylys"
-  - "tommy hilfiger", "armani exchange", "michael kors", "daniel wellington", etc.
+# - The `brand` column contains names like:
+#   - "titan", "titan raga", "titan edge", "titan xylys"
+#   - "tommy hilfiger", "armani exchange", "michael kors", "daniel wellington", etc.
 
-- For all brand filters:
-  Use: `LOWER(brand) LIKE '%<keyword>%'`
-  - This ensures flexible matches even if the user types partial names like:
-    - "raga" → matches "titan raga"
-    - "dw" → matches "daniel wellington"
-    - "armani" → matches "armani exchange"
+# - For all brand filters:
+#   Use: `LOWER(brand) LIKE '%<keyword>%'`
+#   - This ensures flexible matches even if the user types partial names like:
+#     - "raga" → matches "titan raga"
+#     - "dw" → matches "daniel wellington"
+#     - "armani" → matches "armani exchange"
 
-Examples:
-- "Show raga watches" → `LOWER(brand) LIKE '%raga%'`
-- "Show titan watches" → `LOWER(brand) LIKE '%titan%'`
-- "Show xylys watches" → `LOWER(brand) LIKE '%xylys%'`
-- "Show dw watches" → `LOWER(brand) LIKE '%dw%'`
-- "Show armani watches" → `LOWER(brand) LIKE '%armani%'`
+# Examples:
+# - "Show raga watches" → `LOWER(brand) LIKE '%raga%'`
+# - "Show titan watches" → `LOWER(brand) LIKE '%titan%'`
+# - "Show xylys watches" → `LOWER(brand) LIKE '%xylys%'`
+# - "Show dw watches" → `LOWER(brand) LIKE '%dw%'`
+# - "Show armani watches" → `LOWER(brand) LIKE '%armani%'`
 
-Note:
-- Always use `LOWER(brand) LIKE '%keyword%'` to allow for fuzzy/partial brand name matching.
-- Do **not** use exact matches (`=`) unless you're confident of exact query match.
+# Note:
+# - Always use `LOWER(brand) LIKE '%keyword%'` to allow for fuzzy/partial brand name matching.
+# - Do **not** use exact matches (`=`) unless you're confident of exact query match.
 
 
 Follow-Up Handling:
