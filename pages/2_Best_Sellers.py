@@ -54,30 +54,9 @@ def render_best_sellers(gender):
         if st.sidebar.checkbox(band, key=f"price_band_{band}"):
             selected_priceband.append(band)
 
-    # 2. Price Range Slider + Input
-
-    # --- Price Range Section ---
-    st.sidebar.markdown("**Price Range**")
-    
+    # 2. Price Range Slider
     price_min, price_max = int(df["price"].min()), int(df["price"].max())
-    
-    # Slider without visible labels
-    selected_price = st.sidebar.slider(
-        label=" ",  # Hide slider label
-        min_value=price_min,
-        max_value=price_max,
-        value=(price_min, price_max),
-        step=100,
-        key="price_slider"
-    )
-    
-    # Text inputs to replace the blue labels
-    col1, col2 = st.sidebar.columns(2)
-    min_price = col1.number_input("Min ₹", value=selected_price[0], min_value=price_min, max_value=selected_price[1], step=100, key="min_price_input_box")
-    max_price = col2.number_input("Max ₹", value=selected_price[1], min_value=min_price, max_value=price_max, step=100, key="max_price_input_box")
-    
-    # Sync slider back to inputs
-    selected_price = (min_price, max_price)    
+    selected_price = st.sidebar.slider("Price Range", price_min, price_max, (price_min, price_max))
 
     # 3. Brand
     df["brand"] = df["brand"].str.strip().str.lower().str.title()
