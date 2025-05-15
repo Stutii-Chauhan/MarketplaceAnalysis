@@ -124,6 +124,7 @@ def enforce_case_insensitivity(sql_query, table_name):
 
     return sql_query
 
+
 # ---- Helper Functions ----
 def generate_schema_prompt():
     return "\n".join([
