@@ -4,6 +4,7 @@ import google.generativeai as genai
 from sqlalchemy import create_engine
 import plotly.express as px
 from urllib.parse import quote_plus
+import re
 
 # ---- Streamlit Config ----
 st.set_page_config(layout="wide")
