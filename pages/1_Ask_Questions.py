@@ -290,10 +290,7 @@ if user_input:
             df_result = pd.read_sql_query(sql_query, engine)
 
             # ✅ Determine result shape
-            if df_result.shape == (1, 1):
-                result_to_store = df_result.iloc[0, 0]
-            else:
-                result_to_store = df_result
+            result_to_store = df_result
 
             # ✅ Save assistant response with SQL + result
             st.session_state.chat_history.append({
