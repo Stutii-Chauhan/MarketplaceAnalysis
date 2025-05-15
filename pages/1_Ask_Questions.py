@@ -286,11 +286,18 @@ if user_input:
 # st.markdown("### 🧠 Chat History")
 chat_container = st.container()
 with chat_container:
-    for msg in st.session_state.chat_history:
-        if msg["role"] == "user":
-            st.markdown(f" **You:** {msg['content']}")
-        else:
-            st.markdown(f" **Buzz:** `{msg['content']}`")
+    for i, msg in enumerate(st.session_state.chat_history):
+    if msg["role"] == "user":
+        st.markdown(f"**User:** {msg['content']}")
+    elif msg["role"] == "assistant":
+        st.markdown(f"**Buzz (SQL):** ```sql\n{msg['content']}\n```")
+        # Output display if it's a count query
+        if "count(" in msg["content"].lower():
+            try:
+                result = st.session_state.query_result.iloc[0, 0]
+                st.markdown(f"**Buzz(Result):** {result}")
+            except:
+                st.markdown(f"**Buzz(Result):** (error reading output)")
 
-if st.session_state.last_table:
-    st.caption(f"📌 Last table used: `{st.session_state.last_table}`")
+# if st.session_state.last_table:
+#     st.caption(f"📌 Last table used: `{st.session_state.last_table}`")
