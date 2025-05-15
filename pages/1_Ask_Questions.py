@@ -21,7 +21,7 @@ HOST = st.secrets["SUPABASE_HOST"]
 PORT = st.secrets["SUPABASE_PORT"]
 engine = create_engine(f"postgresql://{USER}:{PASSWORD}@{HOST}:{PORT}/{DB}")
 
-# ---- Table Schemas ----
+# ---- Table Schemas ---
 COMMON_WATCH_SCHEMA = {
     "url": "text",
     "brand": "text",
