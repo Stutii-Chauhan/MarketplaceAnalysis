@@ -29,8 +29,8 @@ COMMON_WATCH_SCHEMA = {
     "model_number": "text",
     "model_year": "int",
     "price": "float",
-    "rating(out_of_5)": "float",
-    "discount_(%)": "float",
+    "ratings": "float",
+    "discount_percentage": "float",
     "band_colour": "text",
     "band_material": "text",
     "band_width": "text",
@@ -125,8 +125,8 @@ This is the master table with full product listings. Column descriptions:
 - "model_number" — model ID
 - "model_year" — year the watch was launched on Amazon
 - "price" — selling price
-- "rating(out_of_5)" — customer rating out of 5
-- "discount_(%)" — discount percentage
+- "ratings" — customer rating out of 5
+- "discount_percentage" — discount percentage
 - "band_colour" — color of the strap/band
 - "band_material" — material of the strap (e.g., Leather, Stainless Steel, Rubber)
 - "band_width" — width of the band in mm
