@@ -329,30 +329,29 @@ with chat_container:
         elif msg["role"] == "assistant":
             st.markdown("**Buzz (SQL):**")
             st.code(msg["content"], language="sql")
-        
+
             result = msg.get("result")
-            show_in_preview = False
-        
-            # ✅ Case 1: Single scalar value (e.g., count)
-            if isinstance(result, (int, float)):
+
+            # ✅ Case 1: 1x1 DataFrame (e.g., COUNT(*))
+            if isinstance(result, pd.DataFrame) and result.shape == (1, 1):
+                value = result.iloc[0, 0]
                 st.markdown(
                     f"""
                     <div style='background-color:#e8f8e4; padding:10px; border-radius:8px; margin-top:-10px;'>
-                        <strong>Buzz (Result):</strong> {result}
+                        <strong>Buzz (Result):</strong> {value}
                     </div>
                     """, unsafe_allow_html=True
                 )
                 if i == len(st.session_state.chat_history) - 1:
-                    # Set preview to a DataFrame with one cell
-                    st.session_state.query_result = pd.DataFrame([[result]], columns=["Result"])
-        
+                    st.session_state.query_result = result
+
             # ✅ Case 2: DataFrame with 1 column
             elif isinstance(result, pd.DataFrame) and result.shape[1] == 1:
                 col = result.columns[0]
                 values = result[col].dropna().astype(str).tolist()
                 bullet_values = values[:10]
                 bullets_html = "".join([f"<li>{val}</li>" for val in bullet_values])
-        
+
                 st.markdown(
                     f"""
                     <div style='background-color:#f0fdf4; padding:10px; border-radius:8px; margin-top:-10px;'>
@@ -361,10 +360,10 @@ with chat_container:
                     </div>
                     """, unsafe_allow_html=True
                 )
-        
+
                 if i == len(st.session_state.chat_history) - 1:
                     st.session_state.query_result = result
-        
+
             # ✅ Case 3: DataFrame with >1 column
             elif isinstance(result, pd.DataFrame) and result.shape[1] > 1:
                 if i == len(st.session_state.chat_history) - 1:
