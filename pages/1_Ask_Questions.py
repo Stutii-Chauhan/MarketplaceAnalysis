@@ -301,6 +301,7 @@ if submitted and user_input:
                 "content": sql_query,
                 "result": result_to_store
             })
+            st.session_state.query_result = result_to_store
 
             # ❗ DO NOT set query_result here — it’s done after chat loop
 
