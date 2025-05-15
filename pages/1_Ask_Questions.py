@@ -113,7 +113,6 @@ def generate_schema_prompt():
     ])
 
 def generate_sql_with_context(chat_history):
-def generate_sql_with_context(chat_history):
     context = "\n".join([f"{msg['role']}: {msg['content']}" for msg in chat_history])
     table_guidance = """
 Use these rules to choose the correct table and columns:
