@@ -55,25 +55,29 @@ def render_best_sellers(gender):
             selected_priceband.append(band)
 
     # 2. Price Range Slider + Input
+    
+    # Determine bounds
     price_min, price_max = int(df["price"].min()), int(df["price"].max())
     
-    # Create two columns for number inputs
+    # Input fields instead of slider labels
     col_min, col_max = st.sidebar.columns(2)
-    min_input = col_min.number_input("Min ₹", value=price_min, step=100, key="min_price_input")
-    max_input = col_max.number_input("Max ₹", value=price_max, step=100, key="max_price_input")
+    min_price = col_min.number_input("Min ₹", value=price_min, min_value=price_min, max_value=price_max, step=100, key="min_price_input")
+    max_price = col_max.number_input("Max ₹", value=price_max, min_value=price_min, max_value=price_max, step=100, key="max_price_input")
     
-    # Ensure min < max always
-    if min_input > max_input:
-        st.sidebar.error("⚠️ Min price cannot be greater than max price.")
-    
-    # Optional: slider still shown, synced to input
+    # Slider (syncs to inputs, no manual editing)
     selected_price = st.sidebar.slider(
-        "Price Range", 
-        price_min, price_max, 
-        (min_input, max_input), 
+        " ",  # blank label to hide title
+        min_value=price_min,
+        max_value=price_max,
+        value=(min_price, max_price),
         step=100,
         key="price_slider"
     )
+    
+    # Overwrite inputs based on slider if used
+    min_price, max_price = selected_price
+
+
 
 
 
