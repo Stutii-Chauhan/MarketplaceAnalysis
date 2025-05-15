@@ -144,6 +144,25 @@ This is the master table with full product listings. Column descriptions:
 - "gender" — target audience (Men, Women, Unisex, Couple)
 - "as_of_date" — when the data was last loaded
 
+Brand Matching Rules:
+- The brand column contains full names like:
+  - "titan", "titan raga", "titan edge", "titan xylys"
+  - "tommy hilfiger", "armani exchange", "michael kors", "daniel wellington", etc.
+
+- Use the following mappings when interpreting user queries:
+  - "raga" → 'titan raga'
+  - "edge" → 'titan edge'
+  - "xylys" → 'titan xylys'
+  - "titan" → 'titan'
+  - "tommy" → 'tommy hilfiger'
+  - "armani" → 'armani exchange'
+  - "dw" → 'daniel wellington'
+  - "kors" → 'michael kors'
+
+- Always match brand using:
+  ```sql
+  LOWER(brand) = '<mapped_full_name>'
+
 Price Range logic:
 - There are two types of price references in user queries:
   1. **Predefined Price Bands** → Use the `price_band` column
@@ -175,31 +194,6 @@ If the user's query contains materials (e.g., "stainless steel", "leather", "rub
 Text based filters:
 - The text columns are stored in sentence case always. Follow this while writing queries.
 
-# Brand Matching Logic:
-
-# - The `brand` column contains names like:
-#   - "titan", "titan raga", "titan edge", "titan xylys"
-#   - "tommy hilfiger", "armani exchange", "michael kors", "daniel wellington", etc.
-
-# - For all brand filters:
-#   Use: `LOWER(brand) LIKE '%<keyword>%'`
-#   - This ensures flexible matches even if the user types partial names like:
-#     - "raga" → matches "titan raga"
-#     - "dw" → matches "daniel wellington"
-#     - "armani" → matches "armani exchange"
-
-# Examples:
-# - "Show raga watches" → `LOWER(brand) LIKE '%raga%'`
-# - "Show titan watches" → `LOWER(brand) LIKE '%titan%'`
-# - "Show xylys watches" → `LOWER(brand) LIKE '%xylys%'`
-# - "Show dw watches" → `LOWER(brand) LIKE '%dw%'`
-# - "Show armani watches" → `LOWER(brand) LIKE '%armani%'`
-
-# Note:
-# - Always use `LOWER(brand) LIKE '%keyword%'` to allow for fuzzy/partial brand name matching.
-# - Do **not** use exact matches (`=`) unless you're confident of exact query match.
-
-
 Follow-Up Handling:
 - For follow-up questions, retain previously used filters or table if the user does not explicitly change them.
 """
@@ -216,7 +210,7 @@ Conversation so far:
 {context}
 
 Now generate a valid SQL query for the user's most recent question.
-Only return the SQL. Do not explain.
+Only return the SQL. Do not explain. Do not format it as a Python object or JSON.
 """
 
     try:
