@@ -21,31 +21,96 @@ PORT = st.secrets["SUPABASE_PORT"]
 engine = create_engine(f"postgresql://{USER}:{PASSWORD}@{HOST}:{PORT}/{DB}")
 
 # ---- Table Schemas ----
-TABLE_SCHEMAS = {
-    "scraped_data_cleaned": [
-        "file", "url", "brand", "product_name", "model_number", "model_year", "price",
-        "rating(out_of_5)", "discount_(%)", "band_colour", "band_material", "band_width",
-        "case_diameter", "case_material", "case_thickness", "dial_colour", "crystal_material",
-        "case_shape", "movement", "water_resistance_depth", "special_features", "image",
-        "imageurl", "price_band", "gender", "as_of_date"
-    ],
-    "final_watch_dataset_women_output_rows": [
-        "url", "brand", "product_name", "model_number", "price", "ratings", "discount",
-        "band_colour", "band_material", "band_width", "case_diameter", "case_material",
-        "case_thickness", "dial_colour", "crystal_material", "case_shape", "movement",
-        "water_resistance_depth", "special_features", "imageurl", "image"
-    ],
-    "final_watch_dataset_men_output_rows": [
-        "url", "brand", "product_name", "model_number", "price", "ratings", "discount",
-        "band_colour", "band_material", "band_width", "case_diameter", "case_material",
-        "case_thickness", "dial_colour", "crystal_material", "case_shape", "movement",
-        "water_resistance_depth", "special_features", "imageurl", "image"
-    ]
+COMMON_WATCH_SCHEMA = {
+    "url": "text",
+    "brand": "text",
+    "product_name": "text",
+    "model_number": "text",
+    "model_year": "int",
+    "price": "float",
+    "rating(out_of_5)": "float",
+    "discount_(%)": "float",
+    "band_colour": "text",
+    "band_material": "text",
+    "band_width": "text",
+    "case_diameter": "text",
+    "case_material": "text",
+    "case_thickness": "text",
+    "dial_colour": "text",
+    "crystal_material": "text",
+    "case_shape": "text",
+    "movement": "text",
+    "water_resistance_depth": "text",
+    "special_features": "text",
+    "image": "text",
+    "imageurl": "text",
+    "price_band": "text"
 }
+
+TABLE_SCHEMAS = {
+    "scraped_data_cleaned": {
+        "file": "int",
+        **COMMON_WATCH_SCHEMA,
+        "gender": "text",
+        "as_of_date": "date"
+    },
+    "scraped_data_cleaned_men": {
+        "file": "int",
+        **COMMON_WATCH_SCHEMA,
+        "as_of_date": "date"
+    },
+    "scraped_data_cleaned_women": {
+        "file": "int",
+        **COMMON_WATCH_SCHEMA,
+        "as_of_date": "date"
+    },
+    "final_watch_dataset_men_output_rows": {
+        k: v for k, v in COMMON_WATCH_SCHEMA.items()
+        if k not in ["file", "gender", "as_of_date", "price_band", "model_year"]
+    },
+    "final_watch_dataset_women_output_rows": {
+        k: v for k, v in COMMON_WATCH_SCHEMA.items()
+        if k not in ["file", "gender", "as_of_date", "price_band", "model_year"]
+    }
+}
+
+def detect_table_name(sql_query):
+    match = re.search(r"FROM\s+([a-zA-Z0-9_]+)", sql_query, re.IGNORECASE)
+    return match.group(1).strip() if match else "scraped_data_cleaned"
+
+def enforce_case_insensitivity(sql_query, table_name):
+    sql_query = sql_query.replace("= \"", "= '").replace("\"", "'")
+
+    if table_name not in TABLE_SCHEMAS:
+        return sql_query  # fail-safe
+
+    text_columns = [col for col, dtype in TABLE_SCHEMAS[table_name].items() if dtype == "text"]
+
+    for col in text_columns:
+        # Equality match: column = 'value'
+        pattern = rf"\b{col}\s*=\s*'([^']+)'"
+        matches = re.findall(pattern, sql_query, flags=re.IGNORECASE)
+        for match in matches:
+            fixed = f"LOWER({col}) = '{match.lower()}'"
+            sql_query = re.sub(rf"\b{col}\s*=\s*'[^']+'", fixed, sql_query, flags=re.IGNORECASE)
+
+        # IN clause: column IN ('A', 'B')
+        pattern_in = rf"\b{col}\s+IN\s*\(([^)]+)\)"
+        matches_in = re.findall(pattern_in, sql_query, flags=re.IGNORECASE)
+        for match in matches_in:
+            values = [v.strip().strip("'").strip('"').lower() for v in match.split(",")]
+            fixed = f"LOWER({col}) IN ({', '.join([f'\'{v}\'' for v in values])})"
+            sql_query = re.sub(rf"\b{col}\s+IN\s*\([^)]+\)", fixed, sql_query, flags=re.IGNORECASE)
+
+    return sql_query
+
 
 # ---- Helper Functions ----
 def generate_schema_prompt():
-    return "\n".join([f"- {table}: [{', '.join(cols)}]" for table, cols in TABLE_SCHEMAS.items()])
+    return "\n".join([
+        f"- {table}: [{', '.join([f'{col} ({dtype})' for col, dtype in cols.items()])}]"
+        for table, cols in TABLE_SCHEMAS.items()
+    ])
 
 def generate_sql_with_context(chat_history):
     context = "\n".join([f"{msg['role']}: {msg['content']}" for msg in chat_history])
