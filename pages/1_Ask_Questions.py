@@ -360,7 +360,14 @@ with chat_container:
 
             # ✅ Case 3: DataFrame with >1 column
             elif isinstance(result, pd.DataFrame) and result.shape[1] > 1:
-                pass
+                st.markdown(
+                    f"""
+                    <div style='background-color:#fffaf0; padding:10px; border-radius:8px; margin-top:-10px; margin-bottom:10px;'>
+                        <strong>Buzz (Preview):</strong>
+                    </div>
+                    """, unsafe_allow_html=True
+                )
+                st.dataframe(result, use_container_width=True)
 
 if st.session_state.chat_history:
     last_msg = st.session_state.chat_history[-1]
