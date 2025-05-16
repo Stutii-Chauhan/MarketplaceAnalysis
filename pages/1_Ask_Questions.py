@@ -458,8 +458,8 @@ with chat_container:
                 st.dataframe(result, use_container_width=True,height=170)
 
             # ✅ Plot chart under the result if chart type is present
-            if isinstance(result, pd.DataFrame) and not result.empty and chart type:
-                chart_type = detect_chart_type(msg["content"])
+            chart_type = detect_chart_type(msg["content"])
+            if isinstance(result, pd.DataFrame) and not result.empty and chart_type:
                 numeric_cols = result.select_dtypes(include="number").columns.tolist()
                 plot_df = result.copy()
             
