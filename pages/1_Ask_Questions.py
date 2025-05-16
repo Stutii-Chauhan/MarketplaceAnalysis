@@ -334,9 +334,15 @@ with col2:
 
         chart_type = detect_chart_type(st.session_state.last_sql)
 
-        if len(numeric_cols) >= 2 or chart_type in ["bar", "line"]:
+        if (
+            (chart_type == "pie" and len(numeric_cols) == 1 and result.shape[1] >= 2)
+            or len(numeric_cols) >= 2
+            or chart_type in ["bar","column","line"]
+        ):
             try:
-                if chart_type == "bar":
+                if chart_type == "pie":
+                    fig = px.pie(df, names=df.columns[0], values=df.columns[1], title="Pie Chart")
+                elif chart_type in ["bar", "column"]:
                     fig = px.bar(df, x=df.columns[0], y=df.columns[1], title=f"{df.columns[0]} vs {df.columns[1]}")
                 elif chart_type == "line":
                     fig = px.line(df, x=df.columns[0], y=df.columns[1], title=f"{df.columns[0]} vs {df.columns[1]}")
