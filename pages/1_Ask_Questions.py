@@ -317,7 +317,7 @@ with col1:
 
 def detect_chart_type(sql):
     match = re.search(r"--\s*chart:\s*(\w+)", sql, re.IGNORECASE)
-    return match.group(1).strip().lower() if match else "scatter"
+    return match.group(1).strip().lower() if match else None
 
 with col2:
     st.subheader("📊 Chart Plot")
@@ -458,7 +458,7 @@ with chat_container:
                 st.dataframe(result, use_container_width=True,height=170)
 
             # ✅ Plot chart under the result if chart type is present
-            if isinstance(result, pd.DataFrame) and not result.empty:
+            if isinstance(result, pd.DataFrame) and not result.empty and chart type:
                 chart_type = detect_chart_type(msg["content"])
                 numeric_cols = result.select_dtypes(include="number").columns.tolist()
                 plot_df = result.copy()
