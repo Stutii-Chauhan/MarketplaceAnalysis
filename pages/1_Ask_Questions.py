@@ -171,19 +171,26 @@ Price Range logic:
   - Convert “10k”, “25K” etc. to thousands: 10k = 10000
 
 Dominance and Table Selection Rules:
-- Treat “dominant”, “top”, or “popular” brands as the top 5 brands by frequency in the scraped_data_cleaned table.
-- Do not use any best seller tables unless the user explicitly says “best sellers” or similar terms.
 
-Use these table rules:
+- Treat “dominant”, “top”, or “popular” brands as the top 5 brands by frequency in the `scraped_data_cleaned` table.
+- If the user says **only "top"** (without words like "selling", "sellers", or "best"), use the `scraped_data_cleaned` table.
+- If the query mentions **“best”, “top seller”, “top selling”, “best seller”, or “best selling”**, then:
+  - Use `scraped_data_cleaned_men` if the query refers to men
+  - Use `scraped_data_cleaned_women` if the query refers to women
 
-- scraped_data_cleaned → default for general queries (including dominant/top/popular)
-- final_watch_dataset_men_output_rows → only if query explicitly mentions best sellers for men
-- final_watch_dataset_women_output_rows → only if query explicitly mentions best sellers for women
-- Best seller tables share the same schema as scraped_data_cleaned
+Table selection:
 
-Ranking/Product selection rules:
-- The file column indicates product ranking, where lower numbers are better (e.g., file = 1 is the top).
-- If the user asks for top products and doesn't specify a ranking metric (like rating or price), sort by file ASC to get the top-ranked items.
+- Use `scraped_data_cleaned` for general queries (including “top”, “dominant”, or “popular” products or brands).
+- Use scraped_data_cleaned_men if the query includes phrases like “best sellers for men” or “top selling men’s watches”.
+- Use scraped_data_cleaned_women if the query includes phrases like “best sellers for women” or “top selling women’s watches”.
+- These gender-specific tables already reflect best-selling products — **do not apply additional gender filters** when using them.
+- All three tables share the same schema.
+
+Ranking logic:
+
+- The `file` column represents product rank across all tables — lower `file` value = better ranking (e.g., `file = 1` is the top seller).
+- For top/best-selling queries, sort using `ORDER BY file ASC`.
+- For general “top” queries or preference-based sorts (e.g., ratings, price, etc.), use the appropriate `ORDER BY` logic based on context.
 
 Material-related Column Disambiguation:
 If the user's query contains materials (e.g., "stainless steel", "leather", "rubber"), choose the appropriate column:
