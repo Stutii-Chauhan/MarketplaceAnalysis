@@ -301,20 +301,34 @@ with col1:
     if st.session_state.query_result is not None and not st.session_state.query_result.empty:
         st.dataframe(st.session_state.query_result)
 
+def detect_chart_type(sql):
+    match = re.search(r"--\s*chart:\s*(\w+)", sql, re.IGNORECASE)
+    return match.group(1).strip().lower() if match else "scatter"
+
 with col2:
     st.subheader("📊 Chart Plot")
-    if st.session_state.query_result is not None:
-        numeric_cols = st.session_state.query_result.select_dtypes(include="number").columns.tolist()
-        if len(numeric_cols) >= 2:
-            fig = px.scatter(
-                st.session_state.query_result,
-                x=numeric_cols[0],
-                y=numeric_cols[1],
-                title=f"{numeric_cols[0]} vs {numeric_cols[1]}"
-            )
-            st.plotly_chart(fig, use_container_width=True)
+
+    if st.session_state.query_result is not None and not st.session_state.query_result.empty:
+        df = st.session_state.query_result
+        numeric_cols = df.select_dtypes(include="number").columns.tolist()
+        chart_type = detect_chart_type(st.session_state.last_sql)
+
+        if len(numeric_cols) >= 2 or chart_type in ["bar", "line"]:
+            try:
+                if chart_type == "bar":
+                    fig = px.bar(df, x=df.columns[0], y=df.columns[1], title=f"{df.columns[0]} vs {df.columns[1]}")
+                elif chart_type == "line":
+                    fig = px.line(df, x=df.columns[0], y=df.columns[1], title=f"{df.columns[0]} vs {df.columns[1]}")
+                else:
+                    fig = px.scatter(df, x=numeric_cols[0], y=numeric_cols[1], title=f"{numeric_cols[0]} vs {numeric_cols[1]}")
+
+                st.plotly_chart(fig, use_container_width=True)
+
+            except Exception as e:
+                st.warning(f"Could not render chart: {e}")
         else:
             st.info("Not enough numeric columns to display a chart.")
+
 
 # ---- Chat Interface ----
 st.markdown("---")
