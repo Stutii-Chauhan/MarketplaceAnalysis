@@ -367,7 +367,7 @@ with chat_container:
                     </div>
                     """, unsafe_allow_html=True
                 )
-                st.dataframe(result, use_container_width=True)
+                st.dataframe(result, use_container_width=True,height=170)
 
 if st.session_state.chat_history:
     last_msg = st.session_state.chat_history[-1]
