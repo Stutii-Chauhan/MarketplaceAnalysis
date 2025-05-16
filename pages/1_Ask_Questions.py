@@ -64,14 +64,6 @@ TABLE_SCHEMAS = {
         "file": "int",
         **COMMON_WATCH_SCHEMA,
         "as_of_date": "date"
-    },
-    "final_watch_dataset_men_output_rows": {
-        k: v for k, v in COMMON_WATCH_SCHEMA.items()
-        if k not in ["file", "gender", "as_of_date", "price_band", "model_year"]
-    },
-    "final_watch_dataset_women_output_rows": {
-        k: v for k, v in COMMON_WATCH_SCHEMA.items()
-        if k not in ["file", "gender", "as_of_date", "price_band", "model_year"]
     }
 }
 
@@ -180,8 +172,8 @@ Price Range logic:
 
 Table Selection Rules:
 - Use `scraped_data_cleaned` for all general queries unless best sellers are explicitly mentioned.
-- Use `final_watch_dataset_men_output_rows` if the question refers to best sellers for men.
-- Use `final_watch_dataset_women_output_rows` if the question refers to best sellers for women.
+- Use `scraped_data_cleaned_men` if the question refers to best sellers for men.
+- Use `scraped_data_cleaned_women` if the question refers to best sellers for women.
 - Both best seller tables have the **same structure and column definitions** as `scraped_data_cleaned`, so use the same schema description when writing queries for them.
 
 Material-related Column Disambiguation:
