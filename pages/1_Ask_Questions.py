@@ -451,6 +451,30 @@ with chat_container:
                 )
                 st.dataframe(result, use_container_width=True,height=170)
 
+
+            # ✅ Plot chart under the result if chart type is present
+            if isinstance(result, pd.DataFrame) and not result.empty:
+                chart_type = detect_chart_type(msg["content"])
+                numeric_cols = result.select_dtypes(include="number").columns.tolist()
+            
+                # Filter out 0s
+                if numeric_cols:
+                    plot_df = result.copy()
+                    plot_df = plot_df[(plot_df[numeric_cols] != 0).all(axis=1)]
+            
+                    if len(numeric_cols) >= 2 or chart_type in ["bar", "line"]:
+                        try:
+                            if chart_type == "bar":
+                                fig = px.bar(plot_df, x=plot_df.columns[0], y=plot_df.columns[1], title=f"{plot_df.columns[0]} vs {plot_df.columns[1]}")
+                            elif chart_type == "line":
+                                fig = px.line(plot_df, x=plot_df.columns[0], y=plot_df.columns[1], title=f"{plot_df.columns[0]} vs {plot_df.columns[1]}")
+                            else:
+                                fig = px.scatter(plot_df, x=numeric_cols[0], y=numeric_cols[1], title=f"{numeric_cols[0]} vs {numeric_cols[1]}")
+            
+                            st.plotly_chart(fig, use_container_width=True)
+                        except Exception as e:
+                            st.warning(f"Chart rendering failed: {e}")
+
 if st.session_state.chat_history:
     last_msg = st.session_state.chat_history[-1]
     if last_msg["role"] == "assistant" and isinstance(last_msg.get("result"), pd.DataFrame):
