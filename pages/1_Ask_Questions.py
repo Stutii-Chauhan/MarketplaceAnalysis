@@ -194,6 +194,9 @@ If the user's query contains materials (e.g., "stainless steel", "leather", "rub
 Text based filters:
 - The text columns are stored in sentence case always. Follow this while writing queries.
 
+Dominance selection:
+- When the user asks for "dominant brands", interpret it as the top 5 brands by count or specified field in the dataset.
+
 Follow-Up Handling:
 - For follow-up questions, retain previously used filters or table if the user does not explicitly change them.
 """
