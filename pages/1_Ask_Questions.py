@@ -265,7 +265,7 @@ if st.button("🔁 Reset Chat", type="primary"):
     st.session_state.query_result = None
     st.session_state.last_sql = ""
     st.session_state.last_table = ""
-    st.experimental_rerun()
+    st.rerun()
 
 col1, col2 = st.columns(2)
 
