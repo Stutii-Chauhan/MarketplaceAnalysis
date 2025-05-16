@@ -204,16 +204,12 @@ If the user's query contains materials (e.g., "stainless steel", "leather", "rub
 Text based filters:
 - The text columns are stored in sentence case always. Follow this while writing queries.
 
-Dominance selection:
-- Treat "dominant" as the top 5 brands based on their frequency in the scraped_data_cleaned table.
-- Do not switch to any best seller tables unless the user explicitly mentions "best sellers" or similar terms.
-- Default to scraped_data_cleaned for general queries, including "top", "popular", or "dominant" brands.
-
 Chart Generation Rules:
 
-- Only generate a chart if the user explicitly asks to "plot", "graph", "visualize", "draw a chart", or uses similar visual terms.
+- ONLY generate a chart if the user explicitly asks to "plot", "graph", "visualize","visualise","draw a chart", or "chart"
 - When generating a chart, always include a comment at the top of the SQL query to indicate the desired chart type:
   -- chart: bar
+  -- chart: column
   -- chart: scatter
   -- chart: line
   -- chart: pie
@@ -227,6 +223,10 @@ Chart Type Inference:
 
 - Use **bar chart** if the user says:
   - "bar chart", "compare brands", "rank", or describes category vs numeric (e.g., brand vs price)
+  - Requires 1 categorical + 1 numeric column (GROUP BY)
+
+- Use **column chart** if the user says:
+  - "column chart", "compare brands", "rank", or describes category vs numeric (e.g., brand vs price)
   - Requires 1 categorical + 1 numeric column (GROUP BY)
 
 - Use **line chart** if the user says:
