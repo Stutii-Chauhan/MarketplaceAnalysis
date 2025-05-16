@@ -181,6 +181,10 @@ Use these table rules:
 - final_watch_dataset_women_output_rows → only if query explicitly mentions best sellers for women
 - Best seller tables share the same schema as scraped_data_cleaned
 
+Ranking/Product selection rules:
+- The file column indicates product ranking, where lower numbers are better (e.g., file = 1 is the top).
+- If the user asks for top products and doesn't specify a ranking metric (like rating or price), sort by file ASC to get the top-ranked items.
+
 Material-related Column Disambiguation:
 If the user's query contains materials (e.g., "stainless steel", "leather", "rubber"), choose the appropriate column:
 - Use `band_material` if the question includes terms like "strap", "band", or "bracelet"
