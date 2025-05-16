@@ -288,6 +288,9 @@ Only return the SQL. Do not explain. Do not format it as a Python object or JSON
     except Exception as e:
         return f"Gemini failed: {e}"
 
+
+
+
 # ---- Session State Init ----
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
@@ -362,6 +365,40 @@ with col2:
         else:
             st.info("Not enough numeric columns to display a chart.")
 
+# ---- Interpretation Helper ----
+def interpret_1x1_result(df, question):
+    col_name = df.columns[0].replace("_", " ")
+    value = df.iloc[0, 0]
+
+    # Format ₹ if it's a price-like column
+    if isinstance(value, (int, float)) and "price" in col_name:
+        value = f"₹{int(value):,}" if float(value).is_integer() else f"₹{value:,.2f}"
+
+    q = question.lower().strip("?.")
+
+    interpretation_templates = {
+        "how many": "There are {val} {col}.",
+        "number of": "There are {val} {col}.",
+        "count": "There are {val} {col}.",
+        "average": "The average {col} is {val}.",
+        "avg": "The average {col} is {val}.",
+        "mean": "The mean {col} is {val}.",
+        "highest": "The highest {col} is {val}.",
+        "most": "The most {col} is {val}.",
+        "lowest": "The lowest {col} is {val}.",
+        "least": "The least {col} is {val}.",
+        "maximum": "The maximum {col} is {val}.",
+        "minimum": "The minimum {col} is {val}.",
+        "total": "The total {col} is {val}.",
+        "percentage": "The {col} is {val}%.",
+    }
+
+    for keyword, template in interpretation_templates.items():
+        if keyword in q or keyword in col_name:
+            return template.format(col=col_name, val=value)
+
+    return f"The {col_name} is {value}."
+
 
 # ---- Chat Interface ----
 st.markdown("---")
@@ -395,12 +432,20 @@ with st.form("chat_form", clear_on_submit=True):
                             lambda x: f"₹{int(x):,}" if float(x).is_integer() else f"₹{x:,.2f}"
                         )
 
-                # ✅ Save assistant response
-                st.session_state.chat_history.append({
+                # ✅ Prepare assistant response
+                response_msg = {
                     "role": "assistant",
                     "content": sql_query,
                     "result": df_result
-                })
+                }
+                
+                # ✅ Add interpretation for 1x1 result
+                if df_result.shape == (1, 1):
+                    response_msg["interpretation"] = interpret_1x1_result(df_result, user_input)
+                
+                # ✅ Save to chat history
+                st.session_state.chat_history.append(response_msg)
+
 
                 # ✅ Update preview table result
                 st.session_state.query_result = df_result.copy()
@@ -470,6 +515,17 @@ with chat_container:
                     """, unsafe_allow_html=True
                 )
                 st.dataframe(result, use_container_width=True,height=170)
+
+            # ✅ Show interpretation if available
+            if "interpretation" in msg:
+                st.markdown(
+                    f"""
+                    <div style='background-color:#fef9e7; padding:10px; border-left:5px solid #f7c948; border-radius:6px; margin-top:-10px;'>
+                        <em>{msg["interpretation"]}</em>
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
 
             # ✅ Plot chart under the result if chart type is present
             chart_type = detect_chart_type(msg["content"])
