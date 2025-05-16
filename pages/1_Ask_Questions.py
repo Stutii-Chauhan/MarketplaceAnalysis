@@ -397,6 +397,7 @@ with st.form("chat_form", clear_on_submit=True):
 
                 # ✅ Update preview table result
                 st.session_state.query_result = df_result.copy()
+                st.rerun()
 
                 if df_result.empty:
                     st.info("No results found.")
