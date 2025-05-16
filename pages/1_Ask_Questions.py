@@ -277,11 +277,6 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# ✅ Use a form to submit new input only once
-with st.form("chat_form", clear_on_submit=True):
-    user_input = st.text_input("Ask your question here", key="chat_input_internal")
-    submitted = st.form_submit_button("Send")
-
 if submitted and user_input:
     st.session_state.chat_history.append({"role": "user", "content": user_input})
     
@@ -294,33 +289,21 @@ if submitted and user_input:
             # ✅ Run the SQL query
             df_result = pd.read_sql_query(sql_query, engine)
 
-            # ✅ Always store as DataFrame
-            result_to_store = df_result
-
             # ✅ Save assistant response
             st.session_state.chat_history.append({
                 "role": "assistant",
                 "content": sql_query,
-                "result": result_to_store
+                "result": df_result
             })
-            # st.session_state.query_result = result_to_store
 
-            if df_result is not None and not df_result.empty:
-                st.session_state.query_result = df_result.copy()
-            if st.session_state.chat_history:
-                last_msg = st.session_state.chat_history[-1]
-                if last_msg["role"] == "assistant" and isinstance(last_msg.get("result"), pd.DataFrame):
-                    st.session_state.query_result = last_msg["result"]
-
-
-            # ❗ DO NOT set query_result here — it’s done after chat loop
+            # ✅ Update preview result
+            st.session_state.query_result = df_result.copy()
 
             if df_result.empty:
                 st.info("No results found.")
 
         except Exception as e:
             st.error(f"❌ Failed to execute query: {e}")
-
 
 
 # ---- Chat History Display ----
