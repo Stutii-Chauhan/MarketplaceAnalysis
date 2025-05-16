@@ -209,6 +209,29 @@ Dominance selection:
 - Do not switch to any best seller tables unless the user explicitly mentions "best sellers" or similar terms.
 - Default to scraped_data_cleaned for general queries, including "top", "popular", or "dominant" brands.
 
+Chart Generation Rules:
+
+- If the user asks to "plot", "graph", "visualize", or "draw a chart", assume they want a visual output.
+- Use only numeric columns from the query result for plotting (e.g., `price`, `ratings`, `discount_percentage`, etc.).
+- When generating SQL for charts, ensure the query includes at least two numeric columns for plotting.
+- Do not generate charts unless the user explicitly asks for a plot/visual.
+- If the user specifies which columns to plot (e.g., “price vs ratings”), the SQL should include both columns.
+- Determine chart type based on user language and selected columns:
+
+  - If the user says “relationship”, “correlation”, “compare two numeric values”, or “scatter plot” → use **scatter plot**
+  - If the user says “distribution”, “spread”, “histogram” → use **histogram**
+  - If the user says “bar chart”, “compare brands”, or mentions **category vs. number** (e.g., brand vs price) → use **bar chart**
+  - If the user says “trend”, “over time”, “timeline”, or includes a **date column** → use **line chart**
+  - If the user says “share”, “proportion”, “percentage”, or mentions “parts of whole” → use **pie chart** (if categorical distribution)
+
+- Include appropriate columns in the SQL query to match the chart type:
+  - For scatter: 2 numeric columns
+  - For bar: 1 categorical + 1 numeric (use `GROUP BY`)
+  - For line: date/time column + metric
+  - For pie: 1 categorical + `COUNT(*)` or `SUM(value)`
+
+- If only one numeric column is relevant, the chart logic will not run — fall back to a table or summary.
+
 Follow-Up Handling:
 - For follow-up questions, retain previously used filters or table if the user does not explicitly change them.
 """
