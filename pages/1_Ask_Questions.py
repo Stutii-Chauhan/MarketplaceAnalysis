@@ -277,33 +277,39 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-if submitted and user_input:
-    st.session_state.chat_history.append({"role": "user", "content": user_input})
-    
-    with st.spinner("Buzz is thinking..."):
-        try:
-            sql_query = generate_sql_with_context(st.session_state.chat_history)
-            sql_query = sql_query.replace("–", "-").replace("‘", "'").replace("’", "'").replace("“", '"').replace("”", '"')
-            st.session_state.last_sql = sql_query
+# ✅ Use a form to submit new input only once
+with st.form("chat_form", clear_on_submit=True):
+    user_input = st.text_input("Ask your question here", key="chat_input_internal")
+    submitted = st.form_submit_button("Send")
 
-            # ✅ Run the SQL query
-            df_result = pd.read_sql_query(sql_query, engine)
+    if submitted and user_input:
+        st.session_state.chat_history.append({"role": "user", "content": user_input})
+        
+        with st.spinner("Buzz is thinking..."):
+            try:
+                sql_query = generate_sql_with_context(st.session_state.chat_history)
+                sql_query = sql_query.replace("–", "-").replace("‘", "'").replace("’", "'").replace("“", '"').replace("”", '"')
+                st.session_state.last_sql = sql_query
 
-            # ✅ Save assistant response
-            st.session_state.chat_history.append({
-                "role": "assistant",
-                "content": sql_query,
-                "result": df_result
-            })
+                # ✅ Run the SQL query
+                df_result = pd.read_sql_query(sql_query, engine)
 
-            # ✅ Update preview result
-            st.session_state.query_result = df_result.copy()
+                # ✅ Save assistant response
+                st.session_state.chat_history.append({
+                    "role": "assistant",
+                    "content": sql_query,
+                    "result": df_result
+                })
 
-            if df_result.empty:
-                st.info("No results found.")
+                # ✅ Update preview table result
+                st.session_state.query_result = df_result.copy()
 
-        except Exception as e:
-            st.error(f"❌ Failed to execute query: {e}")
+                if df_result.empty:
+                    st.info("No results found.")
+
+            except Exception as e:
+                st.error(f"❌ Failed to execute query: {e}")
+
 
 
 # ---- Chat History Display ----
