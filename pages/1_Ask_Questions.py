@@ -170,11 +170,16 @@ Price Range logic:
   - If the price range is custom or approximate (like “under 10k” or “between 8k and 12k”), use the numeric `price` column.
   - Convert “10k”, “25K” etc. to thousands: 10k = 10000
 
-Table Selection Rules:
-- Use `scraped_data_cleaned` for all general queries unless best sellers are explicitly mentioned.
-- Use `scraped_data_cleaned_men` if the question specifies best sellers for men.
-- Use `scraped_data_cleaned_women` if the question refers to "best" sellers for women.
-- Both best seller tables have the **same structure and column definitions** as `scraped_data_cleaned`, so use the same schema description when writing queries for them.
+Dominance and Table Selection Rules:
+- Treat “dominant”, “top”, or “popular” brands as the top 5 brands by frequency in the scraped_data_cleaned table.
+- Do not use any best seller tables unless the user explicitly says “best sellers” or similar terms.
+
+Use these table rules:
+
+- scraped_data_cleaned → default for general queries (including dominant/top/popular)
+- final_watch_dataset_men_output_rows → only if query explicitly mentions best sellers for men
+- final_watch_dataset_women_output_rows → only if query explicitly mentions best sellers for women
+- Best seller tables share the same schema as scraped_data_cleaned
 
 Material-related Column Disambiguation:
 If the user's query contains materials (e.g., "stainless steel", "leather", "rubber"), choose the appropriate column:
