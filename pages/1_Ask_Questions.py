@@ -288,9 +288,6 @@ Only return the SQL. Do not explain. Do not format it as a Python object or JSON
     except Exception as e:
         return f"Gemini failed: {e}"
 
-
-
-
 # ---- Session State Init ----
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
@@ -365,39 +362,6 @@ with col2:
         else:
             st.info("Not enough numeric columns to display a chart.")
 
-# ---- Interpretation Helper ----
-def interpret_1x1_result(df, user_input):
-    val = df.iloc[0, 0]
-    col = df.columns[0]
-
-    # Smart label lookup
-    label_map = {
-        "count": "products",
-        "total": "products",
-        "total_count": "products",
-        "average_price": "average price",
-        "avg_price": "average price",
-        "price": "price",
-        "max_price": "maximum price",
-        "min_price": "minimum price",
-        "ratings": "average rating",
-        "discount_percentage": "discount",
-    }
-
-    # Choose friendly label if match exists
-    label = label_map.get(col.lower(), col.replace("_", " "))
-
-    # Format val if it's numeric and not already formatted
-    if isinstance(val, (int, float)):
-        if "price" in col.lower():
-            val = f"₹{int(val):,}" if float(val).is_integer() else f"₹{val:,.2f}"
-        elif col.lower() == "discount_percentage":
-            val = f"{val:.0f}%"
-        elif col.lower() == "ratings":
-            val = f"{val:.1f}"
-    
-    return f"There are {val} {label}." if "how many" in user_input.lower() else f"The {label} is {val}."
-
 
 # ---- Chat Interface ----
 st.markdown("---")
@@ -431,20 +395,12 @@ with st.form("chat_form", clear_on_submit=True):
                             lambda x: f"₹{int(x):,}" if float(x).is_integer() else f"₹{x:,.2f}"
                         )
 
-                # ✅ Prepare assistant response
-                response_msg = {
+                # ✅ Save assistant response
+                st.session_state.chat_history.append({
                     "role": "assistant",
                     "content": sql_query,
                     "result": df_result
-                }
-                
-                # ✅ Add interpretation for 1x1 result
-                if df_result.shape == (1, 1):
-                    response_msg["interpretation"] = interpret_1x1_result(df_result, user_input)
-                
-                # ✅ Save to chat history
-                st.session_state.chat_history.append(response_msg)
-
+                })
 
                 # ✅ Update preview table result
                 st.session_state.query_result = df_result.copy()
@@ -514,17 +470,6 @@ with chat_container:
                     """, unsafe_allow_html=True
                 )
                 st.dataframe(result, use_container_width=True,height=170)
-
-            # ✅ Show interpretation if available
-            if "interpretation" in msg:
-                st.markdown(
-                    f"""
-                    <div style='background-color:#fef9e7; padding:10px; border-left:5px solid #f7c948; border-radius:6px; margin-top:-10px;'>
-                        <em>{msg["interpretation"]}</em>
-                    </div>
-                    """,
-                    unsafe_allow_html=True
-                )
 
             # ✅ Plot chart under the result if chart type is present
             chart_type = detect_chart_type(msg["content"])
