@@ -230,6 +230,8 @@ Chart Generation Rules:
   - For line: date/time column + metric
   - For pie: 1 categorical + `COUNT(*)` or `SUM(value)`
 
+- Do not consider values zero (number 0) for plotting 
+
 - If only one numeric column is relevant, the chart logic will not run — fall back to a table or summary.
 
 Follow-Up Handling:
