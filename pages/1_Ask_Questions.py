@@ -136,6 +136,8 @@ This is the master table with full product listings. Column descriptions:
 - "gender" — target audience (Men, Women, Unisex, Couple)
 - "as_of_date" — when the data was last loaded
 
+SKUs is defined as the models/products and SKU code is the model code/ product code
+
 Brand Matching Rules:
 - The brand column contains full names like:
   - "titan", "titan raga", "titan edge", "titan xylys"
