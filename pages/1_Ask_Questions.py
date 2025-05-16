@@ -395,11 +395,30 @@ with st.form("chat_form", clear_on_submit=True):
                             lambda x: f"₹{int(x):,}" if float(x).is_integer() else f"₹{x:,.2f}"
                         )
 
+                # ✅ Generate human-like interpretation
+                summary_prompt = f"""
+                You are an analyst assistant. Given the SQL query and the result, write a one line human-readable answer.
+                Be direct, numerical, and friendly. Don’t explain SQL. 
+                
+                User Question: {user_input}
+                SQL: {sql_query}
+                Result:
+                {df_result.to_string(index=False)}
+                
+                Now write the interpretation:
+                """
+                
+                try:
+                    summary = model.generate_content(summary_prompt).text.strip()
+                except Exception as e:
+                    summary = "🤖 Couldn't generate summary."
+                
                 # ✅ Save assistant response
                 st.session_state.chat_history.append({
                     "role": "assistant",
                     "content": sql_query,
-                    "result": df_result
+                    "result": df_result,
+                    "summary": summary
                 })
 
                 # ✅ Update preview table result
@@ -432,6 +451,17 @@ with chat_container:
             st.code(msg["content"], language="sql")
 
             result = msg.get("result")
+            # Optional Gemini interpretation
+            if "summary" in msg:
+                st.markdown(
+                    f"""
+                    <div style='background-color:#e9effb; padding:10px; border-radius:8px; margin-top:-10px; margin-bottom:10px;'>
+                        <strong>Buzz (Summary):</strong> {msg['summary']}
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
+
 
             # ✅ Case 1: 1x1 DataFrame (e.g., COUNT(*))
             if isinstance(result, pd.DataFrame) and result.shape == (1, 1):
