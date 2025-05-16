@@ -335,7 +335,7 @@ with col2:
         chart_type = detect_chart_type(st.session_state.last_sql)
 
         if (
-            (chart_type == "pie" and len(numeric_cols) == 1 and result.shape[1] >= 2)
+            (chart_type == "pie" and len(numeric_cols) == 1 and df.shape[1] >= 2)
             or len(numeric_cols) >= 2
             or chart_type in ["bar","column","line"]
         ):
