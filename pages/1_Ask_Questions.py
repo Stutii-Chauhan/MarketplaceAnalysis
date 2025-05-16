@@ -114,7 +114,7 @@ scraped_data_cleaned Table Overview:
 This is the master table with full product listings. Column descriptions:
 - "brand" — the brand of the watch
 - "product_name" — product's unique name
-- "model_number" — model ID
+- "model_number" — model ID or SKU code
 - "model_year" — year the watch was launched on Amazon
 - "price" — selling price
 - "ratings" — customer rating out of 5
