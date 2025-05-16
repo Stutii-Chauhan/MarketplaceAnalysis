@@ -301,7 +301,7 @@ if "last_table" not in st.session_state:
 # ---- Layout: Overview + Chart ----
 
 # ---- Reset Button ----
-if st.button("🔁 Reset Chat", type="primary"):
+if st.button("Reset", type="primary"):
     st.session_state.chat_history = []
     st.session_state.query_result = None
     st.session_state.last_sql = ""
