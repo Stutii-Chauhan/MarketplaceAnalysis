@@ -387,6 +387,12 @@ with st.form("chat_form", clear_on_submit=True):
 
                 # ✅ Run the SQL query
                 df_result = pd.read_sql_query(sql_query, engine)
+                
+                # ✅ Format price
+                if "price" in df_result.columns:
+                    df_result["price"] = df_result["price"].apply(
+                        lambda x: f"₹{int(x):,}" if float(x).is_integer() else f"₹{x:,.2f}"
+                    )
 
                 # ✅ Save assistant response
                 st.session_state.chat_history.append({
