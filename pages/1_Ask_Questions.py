@@ -363,11 +363,11 @@ with chat_container:
                 st.markdown(
                     f"""
                     <div style='background-color:#fffaf0; padding:10px; border-radius:8px; margin-top:-10px; margin-bottom:10px;'>
-                        <strong>Buzz (Preview):</strong>
+                        <strong>Buzz (Preview - top 5 rows):</strong>
                     </div>
                     """, unsafe_allow_html=True
                 )
-                st.dataframe(result, use_container_width=True)
+                st.dataframe(result.head(5), use_container_width=True, height=200)
 
 if st.session_state.chat_history:
     last_msg = st.session_state.chat_history[-1]
