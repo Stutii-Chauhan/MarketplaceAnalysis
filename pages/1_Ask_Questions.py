@@ -211,28 +211,42 @@ Dominance selection:
 
 Chart Generation Rules:
 
-- If the user asks to "plot", "graph", "visualize", or "draw a chart", assume they want a visual output.
-- Use only numeric columns from the query result for plotting (e.g., `price`, `ratings`, `discount_percentage`, etc.).
-- When generating SQL for charts, ensure the query includes at least two numeric columns for plotting.
-- Do not generate charts unless the user explicitly asks for a plot/visual.
-- If the user specifies which columns to plot (e.g., “price vs ratings”), the SQL should include both columns.
-- When generating a chart, always include a line at the top of the SQL query like `-- chart: bar`, `-- chart: scatter`, or `-- chart: line` to indicate the desired chart type.
-- Determine chart type based on user language and selected columns:
+- Only generate a chart if the user explicitly asks to "plot", "graph", "visualize", "draw a chart", or uses similar visual terms.
+- When generating a chart, always include a comment at the top of the SQL query to indicate the desired chart type:
+  -- chart: bar
+  -- chart: scatter
+  -- chart: line
+  -- chart: pie
+  -- chart: histogram
 
-  - If the user says “relationship”, “correlation”, “compare two numeric values”, or “scatter plot” → use **scatter plot**
-  - If the user says “distribution”, “spread”, “histogram” → use **histogram**
-  - If the user says “bar chart”, “compare brands”, or mentions **category vs. number** (e.g., brand vs price) → use **bar chart**
-  - If the user says “trend”, “over time”, “timeline”, or includes a **date column** → use **line chart**
-  - If the user says “share”, “proportion”, “percentage”, or mentions “parts of whole” → use **pie chart** (if categorical distribution)
+Chart Type Inference:
 
-- Include appropriate columns in the SQL query to match the chart type:
-  - For scatter: 2 numeric columns
-  - For bar: 1 categorical + 1 numeric (use `GROUP BY`)
-  - For line: date/time column + metric
-  - For pie: 1 categorical + `COUNT(*)` or `SUM(value)`
+- Use **scatter plot** if the user mentions:
+  - "relationship", "correlation", "compare two numeric values", or directly says "scatter"
+  - Requires 2 numeric columns
 
+- Use **bar chart** if the user says:
+  - "bar chart", "compare brands", "rank", or describes category vs numeric (e.g., brand vs price)
+  - Requires 1 categorical + 1 numeric column (GROUP BY)
 
-- If only one numeric column is relevant, the chart logic will not run — fall back to a table or summary.
+- Use **line chart** if the user says:
+  - "trend", "over time", "timeline", or refers to date/time
+  - Requires a time/date column + 1 numeric column
+
+- Use **histogram** if the user says:
+  - "distribution", "spread", "frequency" (1 numeric column only)
+
+- Use **pie chart** if the user says:
+  - "share", "proportion", "percentage", or "parts of whole"
+  - Requires 1 categorical column and an aggregate (COUNT(*) or SUM)
+
+Chart Query Structure:
+
+- Always include relevant columns needed for the chart in the SELECT clause.
+- Filter out rows where numeric values are zero — such values should not be plotted.
+- If the user specifies "X vs Y", ensure both columns are in the SQL in that order (X = x-axis, Y = y-axis).
+- If only one numeric column is available and not enough for a plot, fall back to returning a table.
+
 
 Follow-Up Handling:
 - For follow-up questions, retain previously used filters or table if the user does not explicitly change them.
