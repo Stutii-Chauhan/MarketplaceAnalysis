@@ -216,6 +216,7 @@ Chart Generation Rules:
 - When generating SQL for charts, ensure the query includes at least two numeric columns for plotting.
 - Do not generate charts unless the user explicitly asks for a plot/visual.
 - If the user specifies which columns to plot (e.g., “price vs ratings”), the SQL should include both columns.
+- When generating a chart, always include a line at the top of the SQL query like `-- chart: bar`, `-- chart: scatter`, or `-- chart: line` to indicate the desired chart type.
 - Determine chart type based on user language and selected columns:
 
   - If the user says “relationship”, “correlation”, “compare two numeric values”, or “scatter plot” → use **scatter plot**
@@ -230,7 +231,6 @@ Chart Generation Rules:
   - For line: date/time column + metric
   - For pie: 1 categorical + `COUNT(*)` or `SUM(value)`
 
-- Do not consider values zero (number 0) for plotting 
 
 - If only one numeric column is relevant, the chart logic will not run — fall back to a table or summary.
 
@@ -310,6 +310,7 @@ with col2:
 
     if st.session_state.query_result is not None and not st.session_state.query_result.empty:
         df = st.session_state.query_result
+        df = df[(df[numeric_cols] != 0).all(axis=1)]
         numeric_cols = df.select_dtypes(include="number").columns.tolist()
         chart_type = detect_chart_type(st.session_state.last_sql)
 
