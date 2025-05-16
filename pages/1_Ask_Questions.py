@@ -172,8 +172,8 @@ Price Range logic:
 
 Table Selection Rules:
 - Use `scraped_data_cleaned` for all general queries unless best sellers are explicitly mentioned.
-- Use `scraped_data_cleaned_men` if the question refers to best sellers for men.
-- Use `scraped_data_cleaned_women` if the question refers to best sellers for women.
+- Use `scraped_data_cleaned_men` if the question specifies best sellers for men.
+- Use `scraped_data_cleaned_women` if the question refers to "best" sellers for women.
 - Both best seller tables have the **same structure and column definitions** as `scraped_data_cleaned`, so use the same schema description when writing queries for them.
 
 Material-related Column Disambiguation:
@@ -187,7 +187,9 @@ Text based filters:
 - The text columns are stored in sentence case always. Follow this while writing queries.
 
 Dominance selection:
-- When the user asks for "dominant brands", interpret it as the top 5 brands by count or specified field in the dataset.
+- Treat "dominant" as the top 5 brands based on their frequency in the scraped_data_cleaned table.
+- Do not switch to any best seller tables unless the user explicitly mentions "best sellers" or similar terms.
+- Default to scraped_data_cleaned for general queries, including "top", "popular", or "dominant" brands.
 
 Follow-Up Handling:
 - For follow-up questions, retain previously used filters or table if the user does not explicitly change them.
