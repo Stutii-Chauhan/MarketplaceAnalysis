@@ -451,16 +451,6 @@ with chat_container:
             st.code(msg["content"], language="sql")
 
             result = msg.get("result")
-            # Optional Gemini interpretation
-            if "summary" in msg:
-                st.markdown(
-                    f"""
-                    <div style='background-color:#e9effb; padding:10px; border-radius:8px; margin-top:-10px; margin-bottom:10px;'>
-                        <strong>Buzz (Summary):</strong> {msg['summary']}
-                    </div>
-                    """,
-                    unsafe_allow_html=True
-                )
 
 
             # ✅ Case 1: 1x1 DataFrame (e.g., COUNT(*))
@@ -500,6 +490,17 @@ with chat_container:
                     """, unsafe_allow_html=True
                 )
                 st.dataframe(result, use_container_width=True,height=170)
+
+            # Optional Gemini interpretation
+            if "summary" in msg:
+                st.markdown(
+                    f"""
+                    <div style='background-color:#e9effb; padding:10px; border-radius:8px; margin-top:-10px; margin-bottom:10px;'>
+                        <strong>Buzz (Summary):</strong> {msg['summary']}
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
 
             # ✅ Plot chart under the result if chart type is present
             chart_type = detect_chart_type(msg["content"])
