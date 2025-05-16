@@ -309,9 +309,15 @@ with col2:
     st.subheader("📊 Chart Plot")
 
     if st.session_state.query_result is not None and not st.session_state.query_result.empty:
-        df = st.session_state.query_result
-        df = df[(df[numeric_cols] != 0).all(axis=1)]
+        df = st.session_state.query_result.copy()
+
+        # Get numeric columns first
         numeric_cols = df.select_dtypes(include="number").columns.tolist()
+
+        # Filter out rows with 0 in any numeric column
+        if numeric_cols:
+            df = df[(df[numeric_cols] != 0).all(axis=1)]
+
         chart_type = detect_chart_type(st.session_state.last_sql)
 
         if len(numeric_cols) >= 2 or chart_type in ["bar", "line"]:
