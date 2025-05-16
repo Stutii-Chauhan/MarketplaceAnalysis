@@ -373,10 +373,10 @@ with chat_container:
             elif isinstance(result, pd.DataFrame) and result.shape[1] > 1:
                 pass
 
-# if st.session_state.chat_history:
-#     last_msg = st.session_state.chat_history[-1]
-#     if last_msg["role"] == "assistant" and isinstance(last_msg.get("result"), pd.DataFrame):
-#         st.session_state.query_result = last_msg["result"]
+if st.session_state.chat_history:
+    last_msg = st.session_state.chat_history[-1]
+    if last_msg["role"] == "assistant" and isinstance(last_msg.get("result"), pd.DataFrame):
+        st.session_state.query_result = last_msg["result"]
 
 # if st.session_state.last_table:
 #     st.caption(f"📌 Last table used: `{st.session_state.last_table}`")
