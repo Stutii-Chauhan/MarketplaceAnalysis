@@ -495,12 +495,13 @@ with chat_container:
             if "summary" in msg:
                 st.markdown(
                     f"""
-                    <div style='background-color:#fff9db; padding:10px; border-radius:8px; margin-top:-10px; margin-bottom:10px; font-style: italic;'>
-                        <strong>Buzz (Summary):</strong> {msg['summary']}
+                    <div style='background-color:#fff9db; padding:10px; border-radius:8px; margin-top:-10px; margin-bottom:10px;'>
+                        <strong>Buzz (Summary):</strong> <em>{msg['summary']}</em>
                     </div>
                     """,
                     unsafe_allow_html=True
                 )
+
                 
             # ✅ Plot chart under the result if chart type is present
             chart_type = detect_chart_type(msg["content"])
