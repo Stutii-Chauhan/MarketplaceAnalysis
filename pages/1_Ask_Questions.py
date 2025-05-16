@@ -366,38 +366,37 @@ with col2:
             st.info("Not enough numeric columns to display a chart.")
 
 # ---- Interpretation Helper ----
-def interpret_1x1_result(df, question):
-    col_name = df.columns[0].replace("_", " ")
-    value = df.iloc[0, 0]
+def interpret_1x1_result(df, user_input):
+    val = df.iloc[0, 0]
+    col = df.columns[0]
 
-    # Format ₹ if it's a price-like column
-    if isinstance(value, (int, float)) and "price" in col_name:
-        value = f"₹{int(value):,}" if float(value).is_integer() else f"₹{value:,.2f}"
-
-    q = question.lower().strip("?.")
-
-    interpretation_templates = {
-        "how many": "There are {val} {col}.",
-        "number of": "There are {val} {col}.",
-        "count": "There are {val} {col}.",
-        "average": "The average {col} is {val}.",
-        "avg": "The average {col} is {val}.",
-        "mean": "The mean {col} is {val}.",
-        "highest": "The highest {col} is {val}.",
-        "most": "The most {col} is {val}.",
-        "lowest": "The lowest {col} is {val}.",
-        "least": "The least {col} is {val}.",
-        "maximum": "The maximum {col} is {val}.",
-        "minimum": "The minimum {col} is {val}.",
-        "total": "The total {col} is {val}.",
-        "percentage": "The {col} is {val}%.",
+    # Smart label lookup
+    label_map = {
+        "count": "products",
+        "total": "products",
+        "total_count": "products",
+        "average_price": "average price",
+        "avg_price": "average price",
+        "price": "price",
+        "max_price": "maximum price",
+        "min_price": "minimum price",
+        "ratings": "average rating",
+        "discount_percentage": "discount",
     }
 
-    for keyword, template in interpretation_templates.items():
-        if keyword in q or keyword in col_name:
-            return template.format(col=col_name, val=value)
+    # Choose friendly label if match exists
+    label = label_map.get(col.lower(), col.replace("_", " "))
 
-    return f"The {col_name} is {value}."
+    # Format val if it's numeric and not already formatted
+    if isinstance(val, (int, float)):
+        if "price" in col.lower():
+            val = f"₹{int(val):,}" if float(val).is_integer() else f"₹{val:,.2f}"
+        elif col.lower() == "discount_percentage":
+            val = f"{val:.0f}%"
+        elif col.lower() == "ratings":
+            val = f"{val:.1f}"
+    
+    return f"There are {val} {label}." if "how many" in user_input.lower() else f"The {label} is {val}."
 
 
 # ---- Chat Interface ----
