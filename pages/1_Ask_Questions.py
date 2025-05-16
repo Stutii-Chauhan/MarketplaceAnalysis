@@ -471,7 +471,8 @@ with chat_container:
                             else:
                                 fig = px.scatter(plot_df, x=numeric_cols[0], y=numeric_cols[1], title=f"{numeric_cols[0]} vs {numeric_cols[1]}")
             
-                            st.plotly_chart(fig, use_container_width=True)
+                            st.plotly_chart(fig, use_container_width=True, key=f"chart_{i}")
+
                         except Exception as e:
                             st.warning(f"Chart rendering failed: {e}")
 
