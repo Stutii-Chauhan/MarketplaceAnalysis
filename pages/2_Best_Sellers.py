@@ -168,7 +168,7 @@ def render_best_sellers(gender):
                                             (
                                                 f"{int(rating)}/5" if float(rating).is_integer()
                                                 else f"{round(float(rating), 1)}/5"
-                                            ) if pd.notna((rating := row.get("rating(out_of_5)")))
+                                            ) if pd.notna((rating := row.get("ratings")))
                                                 and str(rating).replace('.', '', 1).isdigit()
                                                 and float(rating) != 0
                                             else "N/A"
@@ -177,7 +177,7 @@ def render_best_sellers(gender):
                                             (
                                                 f"{int(discount)}%" if float(discount).is_integer()
                                                 else f"{round(float(discount), 1)}%"
-                                            ) if pd.notna((discount := row.get("discount_(%)"))) and float(discount) != 0
+                                            ) if pd.notna((discount := row.get("discount_percentage"))) and float(discount) != 0
                                             else "N/A"
                                         }<br>
                                     </div>
