@@ -398,7 +398,7 @@ with st.form("chat_form", clear_on_submit=True):
                 # ✅ Generate human-like interpretation
                 summary_prompt = f"""
                 You are an analyst assistant. Given the SQL query and the result, write a one line human-readable answer.
-                Be direct, numerical, and friendly. Don’t explain SQL. 
+                Be direct, numerical, and friendly. Do not greet. Don’t explain SQL. 
                 
                 User Question: {user_input}
                 SQL: {sql_query}
