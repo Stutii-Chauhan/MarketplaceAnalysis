@@ -203,6 +203,9 @@ If the user's query contains materials (e.g., "stainless steel", "leather", "rub
 
 Text based filters:
 - The text columns are stored in sentence case always. Follow this while writing queries.
+- Always exclude rows where the brand is null, 'NA', 'None', or an empty string.
+- Use this in the WHERE clause: 
+  `brand IS NOT NULL AND brand != 'NA' AND brand != '' AND brand != 'None'`
 
 Chart Generation Rules:
 
