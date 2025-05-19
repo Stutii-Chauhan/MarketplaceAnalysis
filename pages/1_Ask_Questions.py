@@ -11,7 +11,7 @@ st.set_page_config(layout="wide")
 
 # ---- Gemini Setup ----
 genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
-model = genai.GenerativeModel("gemini-pro")
+model = genai.GenerativeModel("gemini-2.0-flash")
 
 # ---- Supabase Connection ----
 DB = st.secrets["SUPABASE_DB"]
