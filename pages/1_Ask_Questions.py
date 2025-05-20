@@ -132,7 +132,7 @@ This is the master table with full product listings. Column descriptions:
 - "water_resistance_depth" — water resistance in meters
 - "special_features" — extra features
 - "image", "imageurl" — product images
-- "price_band" — price bucket (e.g., 10K–15K, 25K–40K, etc.)
+- "price_band" — price bucket
 - "gender" — target audience (Men, Women, Unisex, Couple)
 - "as_of_date" — when the data was last loaded
 
@@ -388,10 +388,21 @@ st.markdown("""
 
 def normalize_price_ranges(text):
     """
-    Fix expressions like '10k -12k', '25k- 40k', '8k – 12k' → '10k–12k'
+    Detect price ranges like '10k–15k', '25k-40k', etc. and normalize them to:
+    price between 10000 and 15000
     """
-    return re.sub(r"(\d+\s*[kK])\s*[-–]\s*(\d+\s*[kK])", r"\1–\2", text)
+    # Replace various dashes with a consistent format
+    text = re.sub(r"(\d+\s*[kK])\s*[-–]\s*(\d+\s*[kK])", r"\1–\2", text)
 
+    # Convert "10k–15k" → "between 10000 and 15000"
+    def convert_range(match):
+        low = int(match.group(1).lower().replace('k', '').strip()) * 1000
+        high = int(match.group(2).lower().replace('k', '').strip()) * 1000
+        return f"between {low} and {high}"
+
+    text = re.sub(r"(\d+)\s*[kK]–(\d+)\s*[kK]", convert_range, text)
+
+    return text
 
 # ✅ Use a form to submit new input only once
 with st.form("chat_form", clear_on_submit=True):
