@@ -392,7 +392,13 @@ def normalize_user_input(text):
 with st.form("chat_form", clear_on_submit=True):
     raw_input = st.text_input("Ask your question here", key="chat_input_internal")
     user_input = normalize_user_input(raw_input)
+
+    # 🔍 Debug output inside the app
+    st.write("RAW INPUT:", raw_input)
+    st.write("NORMALIZED INPUT:", user_input)
+
     submitted = st.form_submit_button("Send")
+
 
     if submitted and user_input:
         st.session_state.chat_history.append({"role": "user", "content": raw_input})
