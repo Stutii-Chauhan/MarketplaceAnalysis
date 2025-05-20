@@ -419,15 +419,20 @@ with st.form("chat_form", clear_on_submit=True):
 
                 # ✅ Generate human-like interpretation
                 summary_prompt = f"""
-                You are an analyst assistant. Given the SQL query and the result, write a one line human-readable answer.
-                Be direct, numerical, and friendly. Do not greet. Don’t explain SQL. 
+                You are a business analyst assistant.
+                Your job is to write a 1-line, smart, human-readable summary from the SQL result — like a confident insight you'd say in a meeting.
+                Instructions:
+                - Be specific and friendly. Use numbers, brands, price bands, and quantities from the result.
+                - Do not explain the SQL. Do not mention 'query' or 'results'.
+                - Do not greet.
+                - Keep it short and sharp, like a business summary.
                 
                 User Question: {user_input}
                 SQL: {sql_query}
                 Result:
                 {df_result.to_string(index=False)}
                 
-                Now write the interpretation:
+                Now write a confident, insight-like summary:
                 """
                 
                 try:
