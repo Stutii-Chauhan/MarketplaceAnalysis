@@ -132,7 +132,7 @@ This is the master table with full product listings. Column descriptions:
 - "water_resistance_depth" — water resistance in meters
 - "special_features" — extra features
 - "image", "imageurl" — product images
-- "price_band" — price bucket
+- "price_band" — price bucket (e.g., 10K–15K, 25K–40K, etc.)
 - "gender" — target audience (Men, Women, Unisex, Couple)
 - "as_of_date" — when the data was last loaded
 
@@ -157,22 +157,20 @@ Brand Matching Rules:
   ```sql
   LOWER(brand) = '<mapped_full_name>'
 
-Price Range Logic:
-- Always use the numeric `price` column for any kind of price filtering — ignore the `price_band` column completely.
-
+Price Range logic:
+- There are two types of price references in user queries:
+  1. **Predefined Price Bands** → Use the `price_band` column
+     - Examples: "10K–15K", "15K–25K", "25K–40K", "40K+" (these are exact predefined bands)
+     - Match using: LOWER(price_band) = '10k–15k' etc.
+  2. **Custom Price Filters** → Use the numeric `price` column
      - Examples: "below 12000", "between 10k and 12k", "under 18k", "greater than 25k", "less than 9500"
      - Interpret "K" or "k" as 1000 (e.g., 10k = 10000)
-     - Handle user typos in price ranges like “10k -12k”, “10k- 12k”, or “10 k – 12 k” by converting them to numeric values and applying correct BETWEEN syntax.
-- Interpret user phrases like:
-  - "below 12000", "under 18k" → `price < 12000` or `price < 18000`
-  - "between 10k and 12k", "10k–12k", "10k -12k", "10k- 12k", "10 k – 12 k" → `price BETWEEN 10000 AND 12000`
-  - "greater than 25k", "more than 9k", "above 9500" → `price > 25000`, etc.
-- Always apply the filter using the `price` column in numeric form:
-  - `price BETWEEN ...`
-  - `price < ...`
-  - `price > ...`
-- Do **not** use `price_band` under any circumstance, even if the user types a predefined band like "10K–15K". Always calculate and filter using the numeric `price` column.
+     - Use SQL filters like: `price BETWEEN 10000 AND 12000`, `price < 18000`, etc.
 
+- Important:
+  - Only use `price_band` if the exact band like '10K–15K' is clearly mentioned.
+  - If the price range is custom or approximate (like “under 10k” or “between 8k and 12k”), use the numeric `price` column.
+  - Convert “10k”, “25K” etc. to thousands: 10k = 10000
 
 Dominance and Table Selection Rules:
 
@@ -205,9 +203,6 @@ If the user's query contains materials (e.g., "stainless steel", "leather", "rub
 
 Text based filters:
 - The text columns are stored in sentence case always. Follow this while writing queries.
-- Always exclude rows where the brand is null, 'NA', 'None', or an empty string.
-- Use this in the WHERE clause: 
-  `brand IS NOT NULL AND brand != 'NA' AND brand != '' AND brand != 'None'`
 
 Chart Generation Rules:
 
@@ -283,32 +278,6 @@ Only return the SQL. Do not explain. Do not format it as a Python object or JSON
             .replace("‘", "'").replace("’", "'")
             .replace("“", '"').replace("”", '"')
         )
-
-        # 🔧 Patch bad Gemini output: price = '10K–15K' → price BETWEEN 10000 AND 15000
-        sql = re.sub(
-            r"price\s*=\s*'(\d+)[kK][–-](\d+)[kK]'",
-            lambda m: f"price BETWEEN {int(m.group(1)) * 1000} AND {int(m.group(2)) * 1000}",
-            sql,
-            flags=re.IGNORECASE
-        )
-        
-        # 🔧 Also patch price = '40K+' → price >= 40000
-        sql = re.sub(
-            r"price\s*=\s*'(\d+)[kK]\+'",
-            lambda m: f"price >= {int(m.group(1)) * 1000}",
-            sql,
-            flags=re.IGNORECASE
-        )
-
-
-        # 🔁 Remove redundant brand cleaning if brand is explicitly filtered
-        if "LOWER(brand)" in sql and "brand IS NOT NULL" in sql:
-            sql = re.sub(
-                r"AND\s+brand\s+IS\s+NOT\s+NULL\s+AND\s+brand\s*!=\s*'NA'\s+AND\s+brand\s*!=\s*''\s+AND\s+brand\s*!=\s*'None'",
-                "",
-                sql,
-                flags=re.IGNORECASE
-            )
 
         # Detect table and apply case-insensitive fix
         table_name = detect_table_name(sql)
@@ -402,31 +371,12 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-def normalize_price_ranges(text):
-    """
-    Detect price ranges like '10k–15k', '25k-40k', etc. and normalize them to:
-    price between 10000 and 15000
-    """
-    # Replace various dashes with a consistent format
-    text = re.sub(r"(\d+\s*[kK])\s*[-–]\s*(\d+\s*[kK])", r"\1–\2", text)
-
-    # Convert "10k–15k" → "between 10000 and 15000"
-    def convert_range(match):
-        low = int(match.group(1).lower().replace('k', '').strip()) * 1000
-        high = int(match.group(2).lower().replace('k', '').strip()) * 1000
-        return f"between {low} and {high}"
-
-    text = re.sub(r"(\d+)\s*[kK]–(\d+)\s*[kK]", convert_range, text)
-
-    return text
-
 # ✅ Use a form to submit new input only once
 with st.form("chat_form", clear_on_submit=True):
     user_input = st.text_input("Ask your question here", key="chat_input_internal")
     submitted = st.form_submit_button("Send")
 
     if submitted and user_input:
-        user_input = normalize_price_ranges(user_input)
         st.session_state.chat_history.append({"role": "user", "content": user_input})
         
         with st.spinner("Buzz is thinking..."):
@@ -447,21 +397,15 @@ with st.form("chat_form", clear_on_submit=True):
 
                 # ✅ Generate human-like interpretation
                 summary_prompt = f"""
-                You are a business analyst assistant.
+                You are an analyst assistant. Given the SQL query and the result, write a one line human-readable answer.
+                Be direct, numerical, and friendly. Do not greet. Don’t explain SQL. 
                 
-                Write a **1-line summary** based on the user's question and the SQL result.
-                - Start with “There are...” or “There is...” instead of “We found” or “The query shows”.
-                - Be direct, numerical, and confident — just like stating an insight in a business review.
-                - Mention the count, brand, price bands, rating, or other relevant filters.
-                - Do **not** explain SQL. Do **not** mention 'query' or 'results'.
-                - Avoid passive voice or vague wording or greeting.
-                                
                 User Question: {user_input}
                 SQL: {sql_query}
                 Result:
                 {df_result.to_string(index=False)}
                 
-                Now write a confident, insight-like summary:
+                Now write the interpretation:
                 """
                 
                 try:
