@@ -171,6 +171,7 @@ Price Range logic:
 - Important:
   - Only use `price_band` if the exact band like '10K–15K' is clearly mentioned.
   - If the price range is custom or approximate (like “under 10k” or “between 8k and 12k”), use the numeric `price` column.
+  - Always treat “between X and Y” or “more than X” as custom numeric ranges (not bands) — unless the range exactly matches a known band like '10K–15K'.
   - Convert “10k”, “25K” etc. to thousands: 10k = 10000
 
 Dominance and Table Selection Rules:
