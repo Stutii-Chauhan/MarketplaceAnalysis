@@ -45,7 +45,6 @@ COMMON_WATCH_SCHEMA = {
     "special_features": "text",
     "image": "text",
     "imageurl": "text",
-    "price_band": "text"
 }
 
 TABLE_SCHEMAS = {
@@ -132,7 +131,6 @@ This is the master table with full product listings. Column descriptions:
 - "water_resistance_depth" — water resistance in meters
 - "special_features" — extra features
 - "image", "imageurl" — product images
-- "price_band" — price bucket (e.g., 10K–15K, 25K–40K, etc.)
 - "gender" — target audience (Men, Women, Unisex, Couple)
 - "as_of_date" — when the data was last loaded
 
@@ -158,19 +156,21 @@ Brand Matching Rules:
   LOWER(brand) = '<mapped_full_name>'
 
 Price Range logic:
-- There are two types of price references in user queries:
-  1. **Predefined Price Bands** → Use the `price_band` column
-     - Examples: "10K–15K", "15K–25K", "25K–40K", "40K+" (these are exact predefined bands)
-     - Match using: LOWER(price_band) = '10k–15k' etc.
-  2. **Custom Price Filters** → Use the numeric `price` column
-     - Examples: "below 12000", "between 10k and 12k", "under 18k", "greater than 25k", "less than 9500"
-     - Interpret "K" or "k" as 1000 (e.g., 10k = 10000)
-     - Use SQL filters like: `price BETWEEN 10000 AND 12000`, `price < 18000`, etc.
+Price Filtering Rules:
+
+- Always use the numeric `price` column.
+- Convert shorthand like “10k”, “25K” to numeric values (e.g., 10k = 10000).
+- If the user mentions a price range (e.g., “10k–15k”, “between 8k and 12k”), write: `price BETWEEN 10000 AND 15000`.
+- If the user says “below 12000”, “under 12k”, write: `price < 12000`.
+- If the user says “above 25000”, “more than 25k”, write: `price > 25000`.
+- Handle user typos like “10k -12k”, “10k – 12k”, “10 k to 12 k” as valid ranges.
+- Never use `price = '10K–15K'` or any string literal comparison for price.
 
 - Important:
-  - Only use `price_band` if the exact band like '10K–15K' is clearly mentioned.
-  - If the price range is custom or approximate (like “under 10k” or “between 8k and 12k”), use the numeric `price` column.
-  - Convert “10k”, “25K” etc. to thousands: 10k = 10000
+  - The column `price_band` has been removed from the schema and should not be used.
+  - All price-related filtering must be done using the numeric `price` column only.
+  - Convert “10k”, “25K”, etc. to thousands: 10k = 10000.
+  - Apply filters using: `price BETWEEN ...`, `price < ...`, or `price > ...` — never as strings.
 
 Dominance and Table Selection Rules:
 
