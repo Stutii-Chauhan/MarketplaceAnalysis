@@ -159,11 +159,11 @@ Price Filtering Rules:
 
 - Always use the numeric `price` column.
 - Convert shorthand like “10k”, “25K” to numeric values (e.g., 10k = 10000).
-- If the user mentions a price range (e.g., “10k–15k”, “between 8k and 12k”), write: `price BETWEEN 10000 AND 15000`.
+- If the user mentions a price range (e.g., “10k–12k”), write: `price BETWEEN 10000 AND 12000`.
 - If the user says “below 12000”, “under 12k”, write: `price < 12000`.
 - If the user says “above 25000”, “more than 25k”, write: `price > 25000`.
 - Handle user typos like “10k -12k”, “10k – 12k”, “10 k to 12 k” as valid ranges.
-- Never use `price = '10K–15K'` or any string literal comparison for price.
+- Never use `price = '10K–12K'` or any string literal comparison for price.
 
 - Important:
   - The column `price_band` has been removed from the schema and should not be used.
