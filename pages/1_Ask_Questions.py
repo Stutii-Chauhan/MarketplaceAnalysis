@@ -155,7 +155,6 @@ Brand Matching Rules:
   ```sql
   LOWER(brand) = '<mapped_full_name>'
 
-Price Range logic:
 Price Filtering Rules:
 
 - Always use the numeric `price` column.
@@ -180,13 +179,21 @@ Dominance and Table Selection Rules:
   - Use `scraped_data_cleaned_men` if the query refers to men
   - Use `scraped_data_cleaned_women` if the query refers to women
 
-Table selection:
+Table Selection Rules:
 
-- Use `scraped_data_cleaned` for general queries (including “top”, “dominant”, or “popular” products or brands).
-- Use scraped_data_cleaned_men if the query includes phrases like “best sellers for men” or “top selling men’s watches”.
-- Use scraped_data_cleaned_women if the query includes phrases like “best sellers for women” or “top selling women’s watches”.
-- These gender-specific tables already reflect best-selling products — **do not apply additional gender filters** when using them.
+- Use `scraped_data_cleaned` for all general queries, including queries about products, brands, or attributes, **unless explicitly instructed otherwise**.
+- Use `scraped_data_cleaned_men` **only if** the user explicitly mentions male-related keywords like:  
+  “men”, “men’s”, “male”, “for men”, or “boys” **along with** best-selling context such as “top sellers”, “best sellers”, “top-selling”, or “best-selling”.
+- Use `scraped_data_cleaned_women` **only if** the user explicitly mentions female-related keywords like:  
+  “women”, “women’s”, “female”, “for women”, or “girls” **along with** best-selling context such as “top sellers”, “best sellers”, “top-selling”, or “best-selling”.
+
+❌ Do **not infer gender** based on brand names like “raga”, “edge”, or “xylys”.
+✅ Always default to `scraped_data_cleaned` if gender or best-selling context is **not explicitly mentioned**.
+
+Important:
+- These gender-specific tables (`_men` and `_women`) are already filtered for best sellers. **Do not apply additional gender or sales rank filters when using them.**
 - All three tables share the same schema.
+
 
 Ranking logic:
 
@@ -371,17 +378,29 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
+def expand_k_notation(text):
+    return re.sub(r"\b(\d+)\s*[kK]\b", lambda m: str(int(m.group(1)) * 1000), text)
+
+def normalize_user_input(text):
+    text = text.replace("–", "-").replace("—", "-")
+    text = expand_k_notation(text)
+    text = re.sub(r"\b(\d{4,6})\s*[-to]+\s*(\d{4,6})\b", r"between \1 and \2", text)
+    return text
+
+
 # ✅ Use a form to submit new input only once
 with st.form("chat_form", clear_on_submit=True):
-    user_input = st.text_input("Ask your question here", key="chat_input_internal")
+    raw_input = st.text_input("Ask your question here", key="chat_input_internal")
+    user_input = normalize_user_input(raw_input)
     submitted = st.form_submit_button("Send")
 
     if submitted and user_input:
-        st.session_state.chat_history.append({"role": "user", "content": user_input})
+        st.session_state.chat_history.append({"role": "user", "content": raw_input})
         
         with st.spinner("Buzz is thinking..."):
             try:
-                sql_query = generate_sql_with_context(st.session_state.chat_history)
+                chat_for_gemini = st.session_state.chat_history[:-1] + [{"role": "user", "content": user_input}]
+                sql_query = generate_sql_with_context(chat_for_gemini)
                 sql_query = sql_query.replace("–", "-").replace("‘", "'").replace("’", "'").replace("“", '"').replace("”", '"')
                 st.session_state.last_sql = sql_query
 
