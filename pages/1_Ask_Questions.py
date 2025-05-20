@@ -418,11 +418,17 @@ with st.form("chat_form", clear_on_submit=True):
                 df_result = pd.read_sql_query(sql_query, engine)
                 
                 # ✅ Format price
+                def safe_format(x):
+                    try:
+                        x_float = float(x)
+                        return f"₹{int(x_float):,}" if x_float.is_integer() else f"₹{x_float:,.2f}"
+                    except:
+                        return x  # Leave it unformatted if it can't be converted to float
+                
                 for col in df_result.columns:
                     if "price" in col.lower():
-                        df_result[col] = df_result[col].apply(
-                            lambda x: f"₹{int(x):,}" if float(x).is_integer() else f"₹{x:,.2f}"
-                        )
+                        df_result[col] = df_result[col].apply(safe_format)
+
 
                 # ✅ Generate human-like interpretation
                 summary_prompt = f"""
