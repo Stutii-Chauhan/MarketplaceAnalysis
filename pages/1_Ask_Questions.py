@@ -157,22 +157,22 @@ Brand Matching Rules:
   ```sql
   LOWER(brand) = '<mapped_full_name>'
 
-Price Range logic:
-- There are two types of price references in user queries:
-  1. **Predefined Price Bands** → Use the `price_band` column
-     - Examples: "10K–15K", "15K–25K", "25K–40K", "40K+" (these are exact predefined bands)
-     - Match using: LOWER(price_band) = '10k–15k' etc.
-  2. **Custom Price Filters** → Use the numeric `price` column
+Price Range Logic:
+- Always use the numeric `price` column for any kind of price filtering — ignore the `price_band` column completely.
+
      - Examples: "below 12000", "between 10k and 12k", "under 18k", "greater than 25k", "less than 9500"
      - Interpret "K" or "k" as 1000 (e.g., 10k = 10000)
-     - Handle user typos in price ranges like “10k -12k”, “10k- 12k”, or “10 k – 12 k” by converting them to numeric values and applying correct `BETWEEN` syntax.
-     - Use SQL filters like: `price BETWEEN 10000 AND 12000`, `price < 18000`, etc.
+     - Handle user typos in price ranges like “10k -12k”, “10k- 12k”, or “10 k – 12 k” by converting them to numeric values and applying correct BETWEEN syntax.
+- Interpret user phrases like:
+  - "below 12000", "under 18k" → `price < 12000` or `price < 18000`
+  - "between 10k and 12k", "10k–12k", "10k -12k", "10k- 12k", "10 k – 12 k" → `price BETWEEN 10000 AND 12000`
+  - "greater than 25k", "more than 9k", "above 9500" → `price > 25000`, etc.
+- Always apply the filter using the `price` column in numeric form:
+  - `price BETWEEN ...`
+  - `price < ...`
+  - `price > ...`
+- Do **not** use `price_band` under any circumstance, even if the user types a predefined band like "10K–15K". Always calculate and filter using the numeric `price` column.
 
-- Important:
-  - Only use `price_band` if the exact band like '10K–15K' is clearly mentioned.
-  - If the price range is custom or approximate (like “under 10k” or “between 8k and 12k”), use the numeric `price` column.
-  - Always treat “between X and Y” or “more than X” as custom numeric ranges (not bands) — unless the range exactly matches a known band like '10K–15K'.
-  - Convert “10k”, “25K” etc. to thousands: 10k = 10000
 
 Dominance and Table Selection Rules:
 
