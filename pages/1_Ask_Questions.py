@@ -393,9 +393,9 @@ with st.form("chat_form", clear_on_submit=True):
     raw_input = st.text_input("Ask your question here", key="chat_input_internal")
     user_input = normalize_user_input(raw_input)
 
-    # 🔍 Debug output inside the app
-    st.write("RAW INPUT:", raw_input)
-    st.write("NORMALIZED INPUT:", user_input)
+    # # 🔍 Debug output inside the app
+    # st.write("RAW INPUT:", raw_input)
+    # st.write("NORMALIZED INPUT:", user_input)
 
     submitted = st.form_submit_button("Send")
 
@@ -410,9 +410,9 @@ with st.form("chat_form", clear_on_submit=True):
                 sql_query = sql_query.replace("–", "-").replace("‘", "'").replace("’", "'").replace("“", '"').replace("”", '"')
                 st.session_state.last_sql = sql_query
 
-                # ✅ Show generated SQL right after NORMALIZED INPUT
-                st.markdown("**Generated SQL:**")
-                st.code(sql_query, language="sql")
+                # # ✅ Show generated SQL right after NORMALIZED INPUT
+                # st.markdown("**Generated SQL:**")
+                # st.code(sql_query, language="sql")
 
                 # ✅ Run the SQL query
                 df_result = pd.read_sql_query(sql_query, engine)
@@ -432,8 +432,11 @@ with st.form("chat_form", clear_on_submit=True):
 
                 # ✅ Generate human-like interpretation
                 summary_prompt = f"""
-                You are an analyst assistant. Given the SQL query and the result, write a one line human-readable answer.
-                Be direct, numerical, and friendly. Do not greet. Don’t explain SQL. 
+                You are a business analyst writing a crisp one-line insight based on SQL results. 
+                Make the tone factual and analytical — avoid casual phrases like "okay", "I found", or "looks like" etc.
+                Use this format: "<Brand> has <number> products <condition>." or "There are <number> products with <condition>."
+                Use ₹ symbol when referring to prices. Round prices to the nearest hundred or thousand where needed. Avoid exclamations.
+
                 
                 User Question: {user_input}
                 SQL: {sql_query}
