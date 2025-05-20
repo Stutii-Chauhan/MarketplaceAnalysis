@@ -420,13 +420,14 @@ with st.form("chat_form", clear_on_submit=True):
                 # ✅ Generate human-like interpretation
                 summary_prompt = f"""
                 You are a business analyst assistant.
-                Your job is to write a 1-line, smart, human-readable summary from the SQL result — like a confident insight you'd say in a meeting.
-                Instructions:
-                - Be specific and friendly. Use numbers, brands, price bands, and quantities from the result.
-                - Do not explain the SQL. Do not mention 'query' or 'results'.
-                - Do not greet.
-                - Keep it short and sharp, like a business summary.
                 
+                Write a **1-line summary** based on the user's question and the SQL result.
+                - Start with “There are...” or “There is...” instead of “We found” or “The query shows”.
+                - Be direct, numerical, and confident — just like stating an insight in a business review.
+                - Mention the count, brand, price bands, rating, or other relevant filters.
+                - Do **not** explain SQL. Do **not** mention 'query' or 'results'.
+                - Avoid passive voice or vague wording or greeting.
+                                
                 User Question: {user_input}
                 SQL: {sql_query}
                 Result:
