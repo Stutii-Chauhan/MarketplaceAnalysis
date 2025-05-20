@@ -284,6 +284,22 @@ Only return the SQL. Do not explain. Do not format it as a Python object or JSON
             .replace("“", '"').replace("”", '"')
         )
 
+        # 🔧 Patch bad Gemini output: price = '10K–15K' → price BETWEEN 10000 AND 15000
+        sql = re.sub(
+            r"price\s*=\s*'(\d+)[kK][–-](\d+)[kK]'",
+            lambda m: f"price BETWEEN {int(m.group(1)) * 1000} AND {int(m.group(2)) * 1000}",
+            sql,
+            flags=re.IGNORECASE
+        )
+        
+        # 🔧 Also patch price = '40K+' → price >= 40000
+        sql = re.sub(
+            r"price\s*=\s*'(\d+)[kK]\+'",
+            lambda m: f"price >= {int(m.group(1)) * 1000}",
+            sql,
+            flags=re.IGNORECASE
+        )
+
 
         # 🔁 Remove redundant brand cleaning if brand is explicitly filtered
         if "LOWER(brand)" in sql and "brand IS NOT NULL" in sql:
