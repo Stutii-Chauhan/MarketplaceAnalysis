@@ -337,37 +337,40 @@ with col2:
 
     if st.session_state.query_result is not None and not st.session_state.query_result.empty:
         df = st.session_state.query_result.copy()
-
-        # Get numeric columns first
-        numeric_cols = df.select_dtypes(include="number").columns.tolist()
-
-        # Filter out rows with 0 in any numeric column
-        if numeric_cols:
-            df = df[(df[numeric_cols] != 0).all(axis=1)]
-
         chart_type = detect_chart_type(st.session_state.last_sql)
 
-        if (
-            (chart_type == "pie" and len(numeric_cols) == 1 and df.shape[1] >= 2)
-            or len(numeric_cols) >= 2
-            or chart_type in ["bar","column","line"]
-        ):
+        if chart_type is not None:
+            numeric_cols = df.select_dtypes(include="number").columns.tolist()
+
+            # Filter out rows where numeric values are zero
+            if numeric_cols:
+                df = df[(df[numeric_cols] != 0).all(axis=1)]
+
             try:
-                if chart_type == "pie":
+                if chart_type == "pie" and len(numeric_cols) == 1 and df.shape[1] >= 2:
                     fig = px.pie(df, names=df.columns[0], values=df.columns[1], title="Pie Chart")
-                elif chart_type in ["bar", "column"]:
+
+                elif chart_type in ["bar", "column"] and len(numeric_cols) >= 1:
                     fig = px.bar(df, x=df.columns[0], y=df.columns[1], title=f"{df.columns[0]} vs {df.columns[1]}")
-                elif chart_type == "line":
+
+                elif chart_type == "line" and len(numeric_cols) >= 1:
                     fig = px.line(df, x=df.columns[0], y=df.columns[1], title=f"{df.columns[0]} vs {df.columns[1]}")
-                else:
+
+                elif chart_type == "scatter" and len(numeric_cols) >= 2:
                     fig = px.scatter(df, x=numeric_cols[0], y=numeric_cols[1], title=f"{numeric_cols[0]} vs {numeric_cols[1]}")
 
-                st.plotly_chart(fig, use_container_width=True)
+                else:
+                    st.info("Not enough data to generate the requested chart.")
+                    fig = None
+
+                if fig:
+                    st.plotly_chart(fig, use_container_width=True)
 
             except Exception as e:
                 st.warning(f"Could not render chart: {e}")
         else:
-            st.info("Not enough numeric columns to display a chart.")
+            st.info("No chart was requested in the query.")
+
 
 
 # ---- Chat Interface ----
