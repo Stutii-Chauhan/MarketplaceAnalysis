@@ -165,6 +165,7 @@ Price Range logic:
   2. **Custom Price Filters** → Use the numeric `price` column
      - Examples: "below 12000", "between 10k and 12k", "under 18k", "greater than 25k", "less than 9500"
      - Interpret "K" or "k" as 1000 (e.g., 10k = 10000)
+     - Handle user typos in price ranges like “10k -12k”, “10k- 12k”, or “10 k – 12 k” by converting them to numeric values and applying correct `BETWEEN` syntax.
      - Use SQL filters like: `price BETWEEN 10000 AND 12000`, `price < 18000`, etc.
 
 - Important:
@@ -282,6 +283,16 @@ Only return the SQL. Do not explain. Do not format it as a Python object or JSON
             .replace("“", '"').replace("”", '"')
         )
 
+
+        # 🔁 Remove redundant brand cleaning if brand is explicitly filtered
+        if "LOWER(brand)" in sql and "brand IS NOT NULL" in sql:
+            sql = re.sub(
+                r"AND\s+brand\s+IS\s+NOT\s+NULL\s+AND\s+brand\s*!=\s*'NA'\s+AND\s+brand\s*!=\s*''\s+AND\s+brand\s*!=\s*'None'",
+                "",
+                sql,
+                flags=re.IGNORECASE
+            )
+
         # Detect table and apply case-insensitive fix
         table_name = detect_table_name(sql)
         sql = enforce_case_insensitivity(sql, table_name)
@@ -374,12 +385,20 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
+def normalize_price_ranges(text):
+    """
+    Fix expressions like '10k -12k', '25k- 40k', '8k – 12k' → '10k–12k'
+    """
+    return re.sub(r"(\d+\s*[kK])\s*[-–]\s*(\d+\s*[kK])", r"\1–\2", text)
+
+
 # ✅ Use a form to submit new input only once
 with st.form("chat_form", clear_on_submit=True):
     user_input = st.text_input("Ask your question here", key="chat_input_internal")
     submitted = st.form_submit_button("Send")
 
     if submitted and user_input:
+        user_input = normalize_price_ranges(user_input)
         st.session_state.chat_history.append({"role": "user", "content": user_input})
         
         with st.spinner("Buzz is thinking..."):
