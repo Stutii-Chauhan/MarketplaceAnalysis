@@ -410,6 +410,10 @@ with st.form("chat_form", clear_on_submit=True):
                 sql_query = sql_query.replace("–", "-").replace("‘", "'").replace("’", "'").replace("“", '"').replace("”", '"')
                 st.session_state.last_sql = sql_query
 
+                # ✅ Show generated SQL right after NORMALIZED INPUT
+                st.markdown("**Generated SQL:**")
+                st.code(sql_query, language="sql")
+
                 # ✅ Run the SQL query
                 df_result = pd.read_sql_query(sql_query, engine)
                 
