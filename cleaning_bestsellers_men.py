@@ -311,6 +311,8 @@ def categorize_titan(row):
             return "Titan Edge"
         elif "Raga" in product:
             return "Titan Raga"
+        elif "Nebula" in product:
+            return "Titan Nebula"
         else:
             return "Titan"
 
