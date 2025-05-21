@@ -45,6 +45,7 @@ COMMON_WATCH_SCHEMA = {
     "special_features": "text",
     "image": "text",
     "imageurl": "text",
+    "number_of_ratings": "int"
 }
 
 TABLE_SCHEMAS = {
@@ -52,17 +53,17 @@ TABLE_SCHEMAS = {
         "file": "int",
         **COMMON_WATCH_SCHEMA,
         "gender": "text",
-        "as_of_date": "date"
+        "As of Date": "date"
     },
     "scraped_data_cleaned_men": {
         "file": "int",
         **COMMON_WATCH_SCHEMA,
-        "as_of_date": "date"
+        "As of Date": "date"
     },
     "scraped_data_cleaned_women": {
         "file": "int",
         **COMMON_WATCH_SCHEMA,
-        "as_of_date": "date"
+        "As of Date": "date"
     }
 }
 
@@ -132,9 +133,11 @@ This is the master table with full product listings. Column descriptions:
 - "special_features" — extra features
 - "image", "imageurl" — product images
 - "gender" — target audience (Men, Women, Unisex, Couple)
+- "number_of_ratings" — total number of ratings on a product
 - "as_of_date" — when the data was last loaded
 
 SKUs is defined as the models/products and SKU code is the model code/ product code
+
 
 Brand Matching Rules:
 - The brand column contains full names like:
@@ -211,6 +214,57 @@ If the user's query contains materials (e.g., "stainless steel", "leather", "rub
 - Use `case_material` if it includes "case", "body", or "watch material"
 - Use `crystal_material` if it includes "crystal", "glass", "sapphire", or "mineral"
 - If no body part is specified, default to `band_material`
+
+Attributes Listing:
+If the user asks for:
+- "all attributes"
+- "all features"
+- "all columns"
+- "overall specifications"
+- "complete attribute summary"
+
+Then interpret it as a request for **top 5 most frequent values** for all of the following columns:
+
+- band_colour
+- band_material
+- band_width
+- case_diameter
+- case_material
+- case_thickness
+- dial_colour
+- crystal_material
+- case_shape
+- movement
+- water_resistance_depth
+- special_features
+
+In this case, return a single SQL query using `UNION ALL` that looks like:
+
+SELECT 'band_colour' AS attribute, band_colour AS value, COUNT(*) AS count
+FROM scraped_data_cleaned
+GROUP BY band_colour
+ORDER BY count DESC
+LIMIT 5
+
+UNION ALL
+
+SELECT 'band_material', band_material, COUNT(*)
+FROM scraped_data_cleaned
+GROUP BY band_material
+ORDER BY count DESC
+LIMIT 5
+
+-- Repeat this for the remaining attributes listed above.
+
+⚠️ Each SELECT block must have its own `LIMIT 5` to restrict top results **per attribute**.
+✅ Output should be a 3-column table with:
+- `attribute` (column name as label)
+- `value` (actual value)
+- `count` (frequency)
+
+- If the user lists specific columns, return top 5 values only for those.
+- If the user uses the word "all" or "overall", include **all 12 predefined attributes**.
+- Eliminate NA from the listing
 
 Text based filters:
 - The text columns are stored in sentence case always. Follow this while writing queries.
