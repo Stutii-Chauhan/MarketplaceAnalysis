@@ -350,6 +350,17 @@ df["special_features"] = df["special_features"].apply(clean_special_features)
 
 #----------------------------------------------------------------
 
+
+df["number_of_ratings"] = (
+    df["number_of_ratings"]
+    .replace("NA", 0)             # Replace string 'NA' with 0
+    .fillna(0)                    # Replace actual NaNs with 0
+    .astype(float)                # Convert to float first
+    .astype(int)                  # Then to int
+)
+
+#-----------------------------------------------------------------
+
 #replace Nulls etc with "NA"
 
 df = df.replace({np.nan: "NA"})
