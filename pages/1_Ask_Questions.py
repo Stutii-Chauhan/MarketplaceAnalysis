@@ -148,6 +148,7 @@ Brand Matching Rules:
   - "raga" → 'titan raga'
   - "edge" → 'titan edge'
   - "xylys" → 'titan xylys'
+  - "nebula" → 'titan nebula'
   - "titan" → 'titan'
   - "tommy" → 'tommy hilfiger'
   - "armani" → 'armani exchange'
