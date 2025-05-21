@@ -206,7 +206,7 @@ If the user's query contains materials (e.g., "stainless steel", "leather", "rub
 - Use `band_material` if the question includes terms like "strap", "band", or "bracelet"
 - Use `case_material` if it includes "case", "body", or "watch material"
 - Use `crystal_material` if it includes "crystal", "glass", "sapphire", or "mineral"
-- If no body part is specified, default to `case_material`
+- If no body part is specified, default to `band_material`
 
 Text based filters:
 - The text columns are stored in sentence case always. Follow this while writing queries.
