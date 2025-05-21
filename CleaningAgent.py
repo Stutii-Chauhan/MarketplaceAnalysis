@@ -355,9 +355,10 @@ df["special_features"] = df["special_features"].apply(clean_special_features)
 
 df["number_of_ratings"] = (
     df["number_of_ratings"]
-    .replace("NA", 0)            # Replace string "NA" with 0
-    .astype(float)               # Convert to float first (safe step)
-    .astype(int)                 # Then to integer
+    .replace("NA", 0)             # Replace string 'NA' with 0
+    .fillna(0)                    # Replace actual NaNs with 0
+    .astype(float)                # Convert to float first
+    .astype(int)                  # Then to int
 )
 
 #---------------------------------------------------------------
