@@ -223,52 +223,53 @@ If the user asks for:
 - "overall specifications"
 - "complete attribute summary"
 
-Then interpret it as a request for the **top 5 most frequent values** for each of the following attributes from the `scraped_data_cleaned` table:
+Then interpret it as a request for the **top 5 most frequent values** for each of the following attributes in the `scraped_data_cleaned` table:
 
-- band_colour
-- band_material
-- band_width
-- case_diameter
-- case_material
-- case_thickness
-- dial_colour
-- crystal_material
-- case_shape
-- movement
-- water_resistance_depth
-- special_features
+- band_colour  
+- band_material  
+- band_width  
+- case_diameter  
+- case_material  
+- case_thickness  
+- dial_colour  
+- crystal_material  
+- case_shape  
+- movement  
+- water_resistance_depth  
+- special_features  
 
-✅ In this case, return a **single SQL query** using `UNION ALL` that looks like:
+✅ In this case, return a single SQL query using `UNION ALL`, where **each `SELECT` block is enclosed in parentheses**. Example:
 
 ```sql
-SELECT 'band_colour' AS attribute, band_colour AS value, COUNT(*) AS count
-FROM scraped_data_cleaned
-WHERE band_colour IS NOT NULL AND band_colour != 'NA'
-GROUP BY band_colour
-ORDER BY count DESC
-LIMIT 5
-
+(
+  SELECT 'band_colour' AS attribute, band_colour AS value, COUNT(*) AS count
+  FROM scraped_data_cleaned
+  WHERE band_colour IS NOT NULL AND band_colour != 'NA'
+  GROUP BY band_colour
+  ORDER BY count DESC
+  LIMIT 5
+)
 UNION ALL
-
-SELECT 'band_material', band_material, COUNT(*)
-FROM scraped_data_cleaned
-WHERE band_material IS NOT NULL AND band_material != 'NA'
-GROUP BY band_material
-ORDER BY count DESC
-LIMIT 5
-
--- Repeat for the remaining attributes.
+(
+  SELECT 'band_material' AS attribute, band_material AS value, COUNT(*) AS count
+  FROM scraped_data_cleaned
+  WHERE band_material IS NOT NULL AND band_material != 'NA'
+  GROUP BY band_material
+  ORDER BY count DESC
+  LIMIT 5
+)
+-- Repeat for each of the remaining attributes
 📌 Rules:
-Use UNION ALL to combine all queries into one result set.
-Use LIMIT 5 within each SELECT block to get top 5 values per column.
-Output must contain 3 columns: attribute, value, and count.
-Use WHERE column IS NOT NULL AND column != 'NA' to exclude missing/invalid values.
-Only use the scraped_data_cleaned table — do not switch tables unless explicitly requested.
+Enclose each SELECT block in parentheses if it contains ORDER BY and LIMIT.
+Use LIMIT 5 in each block to return the top 5 values per attribute.
+The result must include 3 columns: attribute, value, and count.
+Exclude invalid or missing values using: WHERE <column> IS NOT NULL AND <column> != 'NA'.
+Always use the scraped_data_cleaned table. Do not use _men or _women unless explicitly instructed.
 
 🎯 Behavior:
-If the user specifies specific attributes, only include those.
-If the user uses the word “all” or “overall”, include all 12 predefined attributes listed above.
-Do not include SELECT * or raw product previews — this query is only about top attribute values.
+If the user specifies a subset of attributes, generate the same pattern only for those.
+If the user mentions "all" or "overall", include all 12 predefined attributes listed above.
+Do not return product rows (SELECT *) — this is an attribute-level frequency query only.
 
 Text based filters:
 - The text columns are stored in sentence case always. Follow this while writing queries.
