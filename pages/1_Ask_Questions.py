@@ -216,6 +216,7 @@ If the user's query contains materials (e.g., "stainless steel", "leather", "rub
 - If no body part is specified, default to `band_material`
 
 🔍 Attributes Listing Logic:
+
 If the user asks for:
 - "all attributes"
 - "all features"
@@ -238,38 +239,37 @@ Then interpret it as a request for the **top 5 most frequent values** for each o
 - water_resistance_depth  
 - special_features  
 
-✅ In this case, return a single SQL query using `UNION ALL`, where **each `SELECT` block is enclosed in parentheses**. Example:
+✅ In this case, generate a **single SQL query** using `UNION ALL`, with each `SELECT` block fully enclosed in parentheses. Every block must follow this structure:
 
 ```sql
 (
-  SELECT 'band_colour' AS attribute, band_colour AS value, COUNT(*) AS count
+  SELECT '<attribute>' AS attribute, <column> AS value, COUNT(*) AS count
   FROM scraped_data_cleaned
-  WHERE band_colour IS NOT NULL AND band_colour != 'NA'
-  GROUP BY band_colour
+  WHERE <column> IS NOT NULL AND <column> != 'NA'
+  [AND price BETWEEN <lower> AND <upper>] -- Include if the user specifies a price range
+  GROUP BY <column>
   ORDER BY count DESC
   LIMIT 5
 )
-UNION ALL
-(
-  SELECT 'band_material' AS attribute, band_material AS value, COUNT(*) AS count
-  FROM scraped_data_cleaned
-  WHERE band_material IS NOT NULL AND band_material != 'NA'
-  GROUP BY band_material
-  ORDER BY count DESC
-  LIMIT 5
-)
--- Repeat for each of the remaining attributes
+
 📌 Rules:
-Enclose each SELECT block in parentheses if it contains ORDER BY and LIMIT.
+Wrap every SELECT in parentheses — including the first one — to ensure valid UNION ALL syntax.
+Always use COUNT(*), not COUNT() or COUNT(column).
+If the user specifies a price range (e.g., 10000–15000), include AND price BETWEEN ... in every block.
 Use LIMIT 5 in each block to return the top 5 values per attribute.
-The result must include 3 columns: attribute, value, and count.
-Exclude invalid or missing values using: WHERE <column> IS NOT NULL AND <column> != 'NA'.
-Always use the scraped_data_cleaned table. Do not use _men or _women unless explicitly instructed.
+Exclude missing or invalid entries using: WHERE column IS NOT NULL AND column != 'NA'.
+Result must have exactly 3 columns: attribute, value, count.
 
 🎯 Behavior:
-If the user specifies a subset of attributes, generate the same pattern only for those.
-If the user mentions "all" or "overall", include all 12 predefined attributes listed above.
-Do not return product rows (SELECT *) — this is an attribute-level frequency query only.
+If the user lists specific attributes, generate blocks only for those.
+If the user says "all", "overall", or similar, include all 12 predefined attributes above.
+Do not return full product rows (SELECT *) — only aggregated attribute values.
+Do not use other tables like _men or _women unless explicitly mentioned.
+
+🛑 Strict SQL Integrity:
+Do not leave out parentheses.
+Do not omit the price filter if it was part of the user’s question.
+Do not remove the LIMIT or ORDER BY clause from any block.
 
 Text based filters:
 - The text columns are stored in sentence case always. Follow this while writing queries.
