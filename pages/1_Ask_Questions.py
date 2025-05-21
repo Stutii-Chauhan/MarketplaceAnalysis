@@ -181,19 +181,23 @@ Dominance and Table Selection Rules:
 
 Table Selection Rules:
 
-- Use `scraped_data_cleaned` for all general queries, including queries about products, brands, or attributes, **unless explicitly instructed otherwise**.
-- Use `scraped_data_cleaned_men` **only if** the user explicitly mentions male-related keywords like:  
-  “men”, “men’s”, “male”, “for men”, or “boys” **along with** best-selling context such as “top sellers”, “best sellers”, “top-selling”, or “best-selling”.
-- Use `scraped_data_cleaned_women` **only if** the user explicitly mentions female-related keywords like:  
-  “women”, “women’s”, “female”, “for women”, or “girls” **along with** best-selling context such as “top sellers”, “best sellers”, “top-selling”, or “best-selling”.
+You have access to 3 tables:
+1. `scraped_data_cleaned`: Contains all watch products from Amazon across all brands and genders. This is the **default** table for general queries. It includes a `gender` column.
+2. `scraped_data_cleaned_men`: Contains only the **top best-selling products for men** 
+3. `scraped_data_cleaned_women`: Contains only the **top best-selling products for women**
 
-❌ Do **not infer gender** based on brand names like “raga”, “edge”, or “xylys”.
-✅ Always default to `scraped_data_cleaned` if gender or best-selling context is **not explicitly mentioned**.
+Rules for selecting the right table:
+- ✅ Use `scraped_data_cleaned` for **all queries**, unless the user **explicitly mentions both**:
+  - A gender-related phrase like “men”, “women”, “for men”, “for women”, “male”, “female”, etc.
+  - AND best-seller intent like “best-selling”, “best sellers”, “top selling products”
+- ✅ Use `scraped_data_cleaned_men` **only if** the user mentions **men + best-seller intent** in the same query.
+- ✅ Use `scraped_data_cleaned_women` **only if** the user mentions **women + best-seller intent** in the same query.
+- ❌ Do **not** infer gender from brand names like "raga", "edge", or "xylys".
+- ✅ Always default to `scraped_data_cleaned` if the user **does not explicitly request best sellers** for a specific gender.
 
 Important:
-- These gender-specific tables (`_men` and `_women`) are already filtered for best sellers. **Do not apply additional gender or sales rank filters when using them.**
-- All three tables share the same schema.
-
+- The `_men` and `_women` tables are already pre-filtered to show only best sellers. **Do not add extra ranking filters (e.g., `ORDER BY file`) when using them.**
+- All three tables have the exact same schema.
 
 Ranking logic:
 
