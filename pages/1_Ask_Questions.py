@@ -215,7 +215,7 @@ If the user's query contains materials (e.g., "stainless steel", "leather", "rub
 - Use `crystal_material` if it includes "crystal", "glass", "sapphire", or "mineral"
 - If no body part is specified, default to `band_material`
 
-Attributes Listing:
+🔍 Attributes Listing Logic:
 If the user asks for:
 - "all attributes"
 - "all features"
@@ -223,7 +223,7 @@ If the user asks for:
 - "overall specifications"
 - "complete attribute summary"
 
-Then interpret it as a request for **top 5 most frequent values** for all of the following columns:
+Then interpret it as a request for the **top 5 most frequent values** for each of the following attributes from the `scraped_data_cleaned` table:
 
 - band_colour
 - band_material
@@ -238,10 +238,12 @@ Then interpret it as a request for **top 5 most frequent values** for all of the
 - water_resistance_depth
 - special_features
 
-In this case, return a single SQL query using `UNION ALL` that looks like:
+✅ In this case, return a **single SQL query** using `UNION ALL` that looks like:
 
+```sql
 SELECT 'band_colour' AS attribute, band_colour AS value, COUNT(*) AS count
 FROM scraped_data_cleaned
+WHERE band_colour IS NOT NULL AND band_colour != 'NA'
 GROUP BY band_colour
 ORDER BY count DESC
 LIMIT 5
@@ -250,21 +252,23 @@ UNION ALL
 
 SELECT 'band_material', band_material, COUNT(*)
 FROM scraped_data_cleaned
+WHERE band_material IS NOT NULL AND band_material != 'NA'
 GROUP BY band_material
 ORDER BY count DESC
 LIMIT 5
 
--- Repeat this for the remaining attributes listed above.
+-- Repeat for the remaining attributes.
+📌 Rules:
+Use UNION ALL to combine all queries into one result set.
+Use LIMIT 5 within each SELECT block to get top 5 values per column.
+Output must contain 3 columns: attribute, value, and count.
+Use WHERE column IS NOT NULL AND column != 'NA' to exclude missing/invalid values.
+Only use the scraped_data_cleaned table — do not switch tables unless explicitly requested.
 
-⚠️ Each SELECT block must have its own `LIMIT 5` to restrict top results **per attribute**.
-✅ Output should be a 3-column table with:
-- `attribute` (column name as label)
-- `value` (actual value)
-- `count` (frequency)
-
-- If the user lists specific columns, return top 5 values only for those.
-- If the user uses the word "all" or "overall", include **all 12 predefined attributes**.
-- Eliminate NA from the listing
+🎯 Behavior:
+If the user specifies specific attributes, only include those.
+If the user uses the word “all” or “overall”, include all 12 predefined attributes listed above.
+Do not include SELECT * or raw product previews — this query is only about top attribute values.
 
 Text based filters:
 - The text columns are stored in sentence case always. Follow this while writing queries.
