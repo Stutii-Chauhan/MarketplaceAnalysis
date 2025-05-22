@@ -320,6 +320,8 @@ Chart Query Structure:
 - Filter out rows where numeric values are zero — such values should not be plotted.
 - If the user specifies "X vs Y", ensure both columns are in the SQL in that order (X = x-axis, Y = y-axis).
 - If only one numeric column is available and not enough for a plot, fall back to returning a table.
+🚫 For attribute listing queries (like "top 5 values of all attributes"), do not generate any chart directive such as "-- chart: bar".
+These queries are intended for tabular viewing only and are not visualized unless the user explicitly asks to plot them.
 
 
 Follow-Up Handling:
@@ -352,6 +354,11 @@ Only return the SQL. Do not explain. Do not format it as a Python object or JSON
             .replace("‘", "'").replace("’", "'")
             .replace("“", '"').replace("”", '"')
         )
+
+        # Remove unwanted chart tag if the user didn't ask for it
+        if not any(word in chat_history[-1]["content"].lower() for word in ["plot", "graph", "visualize", "draw", "chart"]):
+            sql = re.sub(r"--\s*chart:\s*\w+\s*", "", sql, flags=re.IGNORECASE)
+
 
         # Detect table and apply case-insensitive fix
         table_name = detect_table_name(sql)
