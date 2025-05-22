@@ -159,6 +159,12 @@ Brand Matching Rules:
   ```sql
   LOWER(brand) = '<mapped_full_name>'
 
+Filtering Rules:
+
+- If the user explicitly says to **exclude 'Others'**, then include this condition:
+  ```sql
+  WHERE LOWER(brand) != 'others'
+
 Price Filtering Rules:
 
 - Always use the numeric `price` column.
