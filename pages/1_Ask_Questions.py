@@ -159,12 +159,6 @@ Brand Matching Rules:
   ```sql
   LOWER(brand) = '<mapped_full_name>'
 
-Filtering Rules:
-
-- If the user explicitly says to **exclude 'Others'**, then include this condition:
-  ```sql
-  WHERE LOWER(brand) != 'others'
-
 Price Filtering Rules:
 
 - Always use the numeric `price` column.
@@ -503,29 +497,6 @@ with st.form("chat_form", clear_on_submit=True):
 
                 # ✅ Run the SQL query
                 df_result = pd.read_sql_query(sql_query, engine)
-
-                # 🔁 Group brands with fewer than 20 SKUs into "Others" if applicable
-                def group_small_sku_brands(df, brand_col="brand", count_col="count", threshold=20):
-                    if brand_col not in df.columns or count_col not in df.columns:
-                        return df  # Not applicable
-                
-                    small = df[df[count_col] < threshold]
-                    if small.empty:
-                        return df
-                
-                    others_total = small[count_col].sum()
-                    df_filtered = df[df[count_col] >= threshold].copy()
-                
-                    others_row = pd.DataFrame([{brand_col: "Others", count_col: others_total}])
-                    df_final = pd.concat([df_filtered, others_row], ignore_index=True)
-                    df_final = df_final.sort_values(by=count_col, ascending=False).reset_index(drop=True)
-                
-                    return df_final
-                
-                # ✅ Apply only when aggregating brand counts
-                if "brand" in df_result.columns and "count" in df_result.columns:
-                    df_result = group_small_sku_brands(df_result, brand_col="brand", count_col="count", threshold=20)
-
                 
                 # ✅ Format price
                 def safe_format(x):
