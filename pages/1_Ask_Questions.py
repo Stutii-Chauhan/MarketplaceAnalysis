@@ -244,11 +244,11 @@ Then interpret it as a request for the **top 5 most frequent values** for each o
 
 ```sql
 (
-  SELECT '<attribute>' AS attribute, <column> AS value, COUNT(*) AS count
+  SELECT '<column_name>' AS attribute, <column_name> AS value, COUNT(*) AS count
   FROM scraped_data_cleaned
-  WHERE <column> IS NOT NULL AND <column> != 'NA'
-  [AND price BETWEEN <lower> AND <upper>] -- Include if the user specifies a price range
-  GROUP BY <column>
+  WHERE <column_name> IS NOT NULL AND <column_name> != 'NA'
+  [AND price BETWEEN <lower> AND <upper>] -- Include this only if the user specifies a price range
+  GROUP BY <column_name>
   ORDER BY count DESC
   LIMIT 5
 )
