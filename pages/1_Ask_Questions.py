@@ -325,7 +325,11 @@ These queries are intended for tabular viewing only and are not visualized unles
 
 
 Follow-Up Handling:
-- For follow-up questions, retain previously used filters or table if the user does not explicitly change them.
+- If the user submits a short message (like "for titan edge", "add Casio", or "between 10k and 15k" etc.), treat it as a refinement of the **last query**.
+- Retain all previous filters and context (e.g., price range, gender, best-seller status, attributes request) unless the user clearly overrides them.
+- Append the new filter (e.g., brand = 'titan edge') to the prior query’s logic.
+- Do not reset the structure or output type. If the last query generated a UNION ALL query for attributes, keep that format.
+
 """
 
     prompt = f"""
