@@ -246,12 +246,15 @@ Then interpret it as a request for the **top 5 most frequent values** for each o
 (
   SELECT '<column_name>' AS attribute, <column_name> AS value, COUNT(*) AS count
   FROM scraped_data_cleaned
-  WHERE <column_name> IS NOT NULL AND <column_name> != 'NA'
-  [AND price BETWEEN <lower> AND <upper>] -- Include this only if the user specifies a price range
+  WHERE <column_name> IS NOT NULL 
+    AND <column_name> != 'NA'
+    [AND price BETWEEN <lower> AND <upper>]  -- include only if price filter is specified
+    [AND LOWER(brand) = '<mapped_full_name>']  -- include only if brand filter is specified
   GROUP BY <column_name>
   ORDER BY count DESC
   LIMIT 5
 )
+
 
 📌 Rules:
 Wrap every SELECT in parentheses — including the first one — to ensure valid UNION ALL syntax.
