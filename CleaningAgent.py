@@ -275,22 +275,41 @@ brand_map = {
 
 # Fill missing brand using product_name
 def infer_brand(row):
-    brand = str(row.get("brand", "")).strip().lower()
+    brand = row.get("brand", "")
     product_name = str(row.get("product_name", "")).lower()
 
-    # If brand is already valid, return as-is
-    if brand and brand != "nan" and brand != "na":
-        return row["brand"].strip().title()
+    # Safely convert brand to lowercase only if it's not null/NA
+    if pd.notna(brand):
+        brand = str(brand).strip().lower()
+    else:
+        brand = ""
 
-    # Infer from product name
+    # ✅ Check if brand is present and valid
+    if brand not in ["", "na", "nan", "none"]:
+        # Try to standardize known brand variations
+        for keyword, mapped_brand in brand_map.items():
+            if keyword in brand:
+                return mapped_brand
+        return brand.title()
+
+    # ✅ Try to infer from product_name
     for keyword, mapped_brand in brand_map.items():
         if keyword in product_name:
             return mapped_brand
 
-    return "NA"
+    # ✅ Fallback if nothing works
+    return "Others"
 
-# Apply to DataFrame
 df["brand"] = df.apply(infer_brand, axis=1)
+
+# Count how many products each brand has
+brand_counts = df["brand"].value_counts()
+
+# Identify rare brands (fewer than 20)
+rare_brands = brand_counts[brand_counts < 20].index
+
+# Replace those with 'Others'
+df["brand"] = df["brand"].apply(lambda x: "Others" if x in rare_brands else x)
 
 #----------------------------------------------------------------
 
