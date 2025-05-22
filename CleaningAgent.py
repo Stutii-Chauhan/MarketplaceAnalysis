@@ -305,8 +305,8 @@ df["brand"] = df.apply(infer_brand, axis=1)
 # Count how many products each brand has
 brand_counts = df["brand"].value_counts()
 
-# Identify rare brands (fewer than 20)
-rare_brands = brand_counts[brand_counts < 20].index
+# Identify rare brands (fewer than 33)
+rare_brands = brand_counts[brand_counts <= 33].index
 
 # Replace those with 'Others'
 df["brand"] = df["brand"].apply(lambda x: "Others" if x in rare_brands else x)
