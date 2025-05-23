@@ -418,41 +418,40 @@ def detect_chart_type(sql):
 with col2:
     st.subheader("📊 Chart Plot")
 
-    if st.session_state.query_result is not None and not st.session_state.query_result.empty:
-        df = st.session_state.query_result.copy()
-        chart_type = detect_chart_type(st.session_state.last_sql)
+    df = st.session_state.query_result
+    sql = st.session_state.last_sql
+    chart_type = detect_chart_type(sql)
 
-        if chart_type is not None:
-            numeric_cols = df.select_dtypes(include="number").columns.tolist()
+    if df is not None and not df.empty:
+        numeric_cols = df.select_dtypes(include="number").columns.tolist()
 
-            # Filter out rows where numeric values are zero
-            if numeric_cols:
-                df = df[(df[numeric_cols] != 0).all(axis=1)]
+        # Filter out rows where any numeric value is 0 (for chart cleanliness)
+        if numeric_cols:
+            df = df[(df[numeric_cols] != 0).all(axis=1)]
 
+        # Render chart only if suitable columns exist
+        if (
+            (chart_type == "pie" and len(numeric_cols) == 1 and df.shape[1] >= 2)
+            or (chart_type in ["bar", "column", "line"] and len(df.columns) >= 2)
+            or (chart_type == "scatter" and len(numeric_cols) >= 2)
+        ):
             try:
-                if chart_type == "pie" and len(numeric_cols) == 1 and df.shape[1] >= 2:
+                if chart_type == "pie":
                     fig = px.pie(df, names=df.columns[0], values=df.columns[1], title="Pie Chart")
-
-                elif chart_type in ["bar", "column"] and len(numeric_cols) >= 1:
+                elif chart_type in ["bar", "column"]:
                     fig = px.bar(df, x=df.columns[0], y=df.columns[1], title=f"{df.columns[0]} vs {df.columns[1]}")
-
-                elif chart_type == "line" and len(numeric_cols) >= 1:
+                elif chart_type == "line":
                     fig = px.line(df, x=df.columns[0], y=df.columns[1], title=f"{df.columns[0]} vs {df.columns[1]}")
-
-                elif chart_type == "scatter" and len(numeric_cols) >= 2:
+                elif chart_type == "scatter":
                     fig = px.scatter(df, x=numeric_cols[0], y=numeric_cols[1], title=f"{numeric_cols[0]} vs {numeric_cols[1]}")
 
-                else:
-                    st.info("Not enough data to generate the requested chart.")
-                    fig = None
-
-                if fig:
-                    st.plotly_chart(fig, use_container_width=True)
-
+                st.plotly_chart(fig, use_container_width=True)
             except Exception as e:
                 st.warning(f"Could not render chart: {e}")
         else:
-            st.info("No chart was requested in the query.")
+            st.info("Not enough data to generate the requested chart.")
+    else:
+        st.info("No chartable data available.")
 
 
 
