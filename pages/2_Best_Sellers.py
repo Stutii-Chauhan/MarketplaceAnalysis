@@ -164,6 +164,13 @@ def render_best_sellers(gender):
                                         <b>Brand:</b> {row.get('brand', 'N/A')}<br>
                                         <b>Model:</b> {row.get('model_number', 'N/A')}<br>
                                         <b>Price:</b> ₹{int(row['price'])}<br>
+                                        <b>Discount:</b> {
+                                            (
+                                                f"{int(discount)}%" if float(discount).is_integer()
+                                                else f"{round(float(discount), 1)}%"
+                                            ) if pd.notna((discount := row.get("discount_percentage"))) and float(discount) != 0
+                                            else "N/A"
+                                        }<br>
                                         <b>Rating:</b> {
                                             (
                                                 f"{int(rating)}/5" if float(rating).is_integer()
@@ -173,13 +180,7 @@ def render_best_sellers(gender):
                                                 and float(rating) != 0
                                             else "N/A"
                                         }<br>
-                                        <b>Discount:</b> {
-                                            (
-                                                f"{int(discount)}%" if float(discount).is_integer()
-                                                else f"{round(float(discount), 1)}%"
-                                            ) if pd.notna((discount := row.get("discount_percentage"))) and float(discount) != 0
-                                            else "N/A"
-                                        }<br>
+                                        <b>Number of reviews:</b> {row.get('number_of_ratings', 'N/A')}<br>
                                     </div>
                                 </div>
                                 """,
