@@ -40,76 +40,74 @@ def render_best_sellers(gender):
     table = "scraped_data_cleaned_men" if gender == "Men" else "scraped_data_cleaned_women"
     df = load_data(table)
 
-    if "filtered_df" in st.session_state:
-        render_results(st.session_state.filtered_df)
+    df["price_band"] = df["price_band"].astype(str).str.strip().str.upper()
+    df["brand"] = df["brand"].astype(str).str.strip().str.lower().str.title()
+    df["dial_colour"] = df["dial_colour"].astype(str).str.strip().str.lower().str.title()
+    df["case_shape"] = df["case_shape"].astype(str).str.strip().str.lower().str.title()
+    df["band_colour"] = df["band_colour"].astype(str).str.strip().str.lower().str.title()
+    df["band_material"] = df["band_material"].astype(str).str.strip().str.lower().str.title()
+    df["movement"] = df["movement"].astype(str).str.strip().str.lower().str.title()
 
-    st.sidebar.header("Filter Products")
 
-    # 1. Price Band (Checkboxes)
-    st.sidebar.markdown("**Price Band**")
-    df["price_band"] = df["price_band"].str.strip().str.upper()
-    price_band_options = clean_filter_options(df["price_band"])
-    selected_priceband = []
-    for band in price_band_options:
-        if st.sidebar.checkbox(band, key=f"price_band_{band}"):
-            selected_priceband.append(band)
+    # --- Sidebar Filter Form ---
+    with st.sidebar.form("filter_form"):
+        st.header("Filter Products")
 
-    # 2. Price Range Slider
-    price_min, price_max = int(df["price"].min()), int(df["price"].max())
-    selected_price = st.sidebar.slider("Price Range", price_min, price_max, (price_min, price_max))
+        price_band_options = clean_filter_options(df["price_band"])
+        selected_priceband = []
+        for band in price_band_options:
+            if st.checkbox(band, key=f"price_band_{band}"):
+                selected_priceband.append(band)
 
-    # 3. Brand
-    df["brand"] = df["brand"].str.strip().str.lower().str.title()
-    valid_brands = clean_filter_options(df["brand"])
-    selected_brands = st.sidebar.multiselect("Brand", valid_brands)
+        price_min, price_max = int(df["price"].min()), int(df["price"].max())
+        selected_price = st.slider("Price Range", price_min, price_max, (price_min, price_max))
 
-    # 4. Dial Colour
-    df["dial_colour"] = df["dial_colour"].str.strip().str.lower().str.title()
-    valid_dialcol = clean_filter_options(df["dial_colour"])
-    selected_dialcol = st.sidebar.multiselect("Dial Colour", valid_dialcol)
+        valid_brands = clean_filter_options(df["brand"])
+        selected_brands = st.multiselect("Brand", valid_brands)
 
-    # 5. Dial Shape
-    df["case_shape"] = df["case_shape"].str.strip().str.lower().str.title()
-    valid_dialshape = clean_filter_options(df["case_shape"])
-    selected_dialshape = st.sidebar.multiselect("Dial Shape", valid_dialshape)
+        valid_dialcol = clean_filter_options(df["dial_colour"])
+        selected_dialcol = st.multiselect("Dial Colour", valid_dialcol)
 
-    # 6. Band Colour
-    df["band_colour"] = df["band_colour"].str.strip().str.lower().str.title()
-    valid_bandcol = clean_filter_options(df["band_colour"])
-    selected_bandcol = st.sidebar.multiselect("Band Colour", valid_bandcol)
+        valid_dialshape = clean_filter_options(df["case_shape"])
+        selected_dialshape = st.multiselect("Dial Shape", valid_dialshape)
 
-    # 7. Band Material
-    df["band_material"] = df["band_material"].str.strip().str.lower().str.title()
-    valid_bandmaterial = clean_filter_options(df["band_material"])
-    selected_bandmaterial = st.sidebar.multiselect("Band Material", valid_bandmaterial)
+        valid_bandcol = clean_filter_options(df["band_colour"])
+        selected_bandcol = st.multiselect("Band Colour", valid_bandcol)
 
-    # 8. Movement
-    df["movement"] = df["movement"].str.strip().str.lower().str.title()
-    valid_movement = clean_filter_options(df["movement"])
-    selected_movement = st.sidebar.multiselect("Movement", valid_movement)
+        valid_bandmaterial = clean_filter_options(df["band_material"])
+        selected_bandmaterial = st.multiselect("Band Material", valid_bandmaterial)
 
-    # Apply filters
-    filtered_df = df.copy()
-    if selected_priceband:
-        filtered_df = filtered_df[filtered_df["price_band"].isin(selected_priceband)]
-    filtered_df = filtered_df[
-        (filtered_df["price"] >= selected_price[0]) & (filtered_df["price"] <= selected_price[1])
-    ]
-    if selected_brands:
-        filtered_df = filtered_df[filtered_df["brand"].isin(selected_brands)]
-    if selected_dialcol:
-        filtered_df = filtered_df[filtered_df["dial_colour"].isin(selected_dialcol)]
-    if selected_bandcol:
-        filtered_df = filtered_df[filtered_df["band_colour"].isin(selected_bandcol)]
-    if selected_dialshape:
-        filtered_df = filtered_df[filtered_df["case_shape"].isin(selected_dialshape)]
-    if selected_bandmaterial:
-        filtered_df = filtered_df[filtered_df["band_material"].isin(selected_bandmaterial)]
-    if selected_movement:
-        filtered_df = filtered_df[filtered_df["movement"].isin(selected_movement)]
+        valid_movement = clean_filter_options(df["movement"])
+        selected_movement = st.multiselect("Movement", valid_movement)
 
-    # --- Drop rows with missing critical fields before pagination ---
-    filtered_df = filtered_df.dropna(subset=["product_name", "url", "imageurl", "price"], how="any")
+        apply_filters = st.form_submit_button("Apply Filters")
+
+ # --- Apply filters only on button click ---
+    if apply_filters:
+        filtered_df = df.copy()
+
+        if selected_priceband:
+            filtered_df = filtered_df[filtered_df["price_band"].isin(selected_priceband)]
+
+        filtered_df = filtered_df[
+            (filtered_df["price"] >= selected_price[0]) & (filtered_df["price"] <= selected_price[1])
+        ]
+
+        if selected_brands:
+            filtered_df = filtered_df[filtered_df["brand"].isin(selected_brands)]
+        if selected_dialcol:
+            filtered_df = filtered_df[filtered_df["dial_colour"].isin(selected_dialcol)]
+        if selected_dialshape:
+            filtered_df = filtered_df[filtered_df["case_shape"].isin(selected_dialshape)]
+        if selected_bandcol:
+            filtered_df = filtered_df[filtered_df["band_colour"].isin(selected_bandcol)]
+        if selected_bandmaterial:
+            filtered_df = filtered_df[filtered_df["band_material"].isin(selected_bandmaterial)]
+        if selected_movement:
+            filtered_df = filtered_df[filtered_df["movement"].isin(selected_movement)]
+
+        filtered_df = filtered_df.dropna(subset=["product_name", "url", "imageurl", "price"], how="any")
+
     
     # --- Pagination Setup ---
     items_per_page = 12
