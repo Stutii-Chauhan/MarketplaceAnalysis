@@ -88,6 +88,11 @@ def render_best_sellers(gender):
     valid_movement = clean_filter_options(df["movement"])
     selected_movement = st.sidebar.multiselect("Movement", valid_movement)
 
+    # 8. Water Resistance
+    df["water_resistance_depth"] = df["water_resistance_depth"].str.strip().str.lower().str.title()
+    valid_waterresistance = clean_filter_options(df["water_resistance_depth"])
+    selected_waterresistance = st.sidebar.multiselect("Water Resistance", valid_movement)
+
     # Apply filters
     filtered_df = df.copy()
     if selected_priceband:
