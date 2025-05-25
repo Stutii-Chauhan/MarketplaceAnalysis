@@ -91,7 +91,7 @@ def render_best_sellers(gender):
     # 8. Water Resistance
     df["water_resistance_depth"] = df["water_resistance_depth"].str.strip().str.lower().str.title()
     valid_waterresistance = clean_filter_options(df["water_resistance_depth"])
-    selected_waterresistance = st.sidebar.multiselect("Water Resistance", valid_movement)
+    selected_waterresistance = st.sidebar.multiselect("Water Resistance", valid_waterresistance)
 
     # Apply filters
     filtered_df = df.copy()
