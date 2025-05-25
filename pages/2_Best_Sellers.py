@@ -112,6 +112,8 @@ def render_best_sellers(gender):
         filtered_df = filtered_df[filtered_df["band_material"].isin(selected_bandmaterial)]
     if selected_movement:
         filtered_df = filtered_df[filtered_df["movement"].isin(selected_movement)]
+    if selected_waterresistance:
+        filtered_df = filtered_df[filtered_df["water_resistance_depth"].isin(selected_waterresistance)]
 
     # --- Drop rows with missing critical fields before pagination ---
     filtered_df = filtered_df.dropna(subset=["product_name", "url", "imageurl", "price"], how="any")
