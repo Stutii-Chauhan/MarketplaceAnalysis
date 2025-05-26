@@ -183,10 +183,13 @@ def normalize_to_mm(value):
         return np.nan
 
     num = float(match.group(1))
-    if "cm" in text:
+
+    # ✅ Check for any cm-like unit
+    if re.search(r"\b(cm|cms|centimeter|centimeters)\b", text):
         num *= 10  # convert to millimeters
 
     return f"{int(num)} Millimeters" if num.is_integer() else f"{num} Millimeters"
+
 
 df["band_width"] = df["band_width"].apply(normalize_to_mm)
 df["case_diameter"] = df["case_diameter"].apply(normalize_to_mm)
