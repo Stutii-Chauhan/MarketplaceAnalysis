@@ -81,7 +81,7 @@ def render_best_sellers(gender):
     #7. Case diameter
     df["case_diameter"] = df["case_diameter"].str.strip().str.lower().str.title()
     valid_diameter = clean_filter_options(df["case_diameter"])
-    selected_diameter = st.sidebar.multiselect("Case Diameter", case_diameter)
+    selected_diameter = st.sidebar.multiselect("Case Diameter", valid_diameter)
 
     #8. Band Colour
     df["band_colour"] = df["band_colour"].str.strip().str.lower().str.title()
