@@ -73,22 +73,32 @@ def render_best_sellers(gender):
     valid_dialshape = clean_filter_options(df["case_shape"])
     selected_dialshape = st.sidebar.multiselect("Dial Shape", valid_dialshape)
 
-    # 6. Band Colour
+    #6. Case thickness
+    df["case_thickness"] = df["case_thickness"].str.strip().str.lower().str.title()
+    valid_thickness = clean_filter_options(df["case_thickness"])
+    selected_thickness = st.sidebar.multiselect("Case Thickness", valid_thickness)
+
+    #7. Case diameter
+    df["case_diameter"] = df["case_diameter"].str.strip().str.lower().str.title()
+    valid_diameter = clean_filter_options(df["case_diameter"])
+    selected_diameter = st.sidebar.multiselect("Case Diameter", case_diameter)
+
+    #8. Band Colour
     df["band_colour"] = df["band_colour"].str.strip().str.lower().str.title()
     valid_bandcol = clean_filter_options(df["band_colour"])
     selected_bandcol = st.sidebar.multiselect("Band Colour", valid_bandcol)
 
-    # 7. Band Material
+    #9. Band Material
     df["band_material"] = df["band_material"].str.strip().str.lower().str.title()
     valid_bandmaterial = clean_filter_options(df["band_material"])
     selected_bandmaterial = st.sidebar.multiselect("Band Material", valid_bandmaterial)
 
-    # 8. Movement
+    #10. Movement
     df["movement"] = df["movement"].str.strip().str.lower().str.title()
     valid_movement = clean_filter_options(df["movement"])
     selected_movement = st.sidebar.multiselect("Movement", valid_movement)
 
-    # 8. Water Resistance
+    #11. Water Resistance
     df["water_resistance_depth"] = df["water_resistance_depth"].str.strip().str.lower().str.title()
     valid_waterresistance = clean_filter_options(df["water_resistance_depth"])
     selected_waterresistance = st.sidebar.multiselect("Water Resistance", valid_waterresistance)
@@ -114,6 +124,10 @@ def render_best_sellers(gender):
         filtered_df = filtered_df[filtered_df["movement"].isin(selected_movement)]
     if selected_waterresistance:
         filtered_df = filtered_df[filtered_df["water_resistance_depth"].isin(selected_waterresistance)]
+    if selected_thickness:
+        filtered_df = filtered_df[filtered_df["case_thickness"].isin(selected_thickness)]
+    if selected_diameter:
+        filtered_df = filtered_df[filtered_df["case_diameter"].isin(selected_diameter)]
 
     # --- Drop rows with missing critical fields before pagination ---
     filtered_df = filtered_df.dropna(subset=["product_name", "url", "imageurl", "price"], how="any")
