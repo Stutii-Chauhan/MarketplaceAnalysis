@@ -364,6 +364,15 @@ Only return the SQL. Do not explain. Do not format it as a Python object or JSON
             .replace("“", '"').replace("”", '"')
         )
 
+        # 🔧 Add ratings != 0 only if ratings is being used
+        if re.search(r"\bratings\b", sql, re.IGNORECASE) and "ratings != 0" not in sql:
+            sql = re.sub(
+                r"(WHERE\s.+?)((GROUP BY|ORDER BY|LIMIT|$))",  # inject before GROUP BY / ORDER BY / LIMIT or end
+                r"\1 AND ratings != 0 \2",
+                sql,
+                flags=re.IGNORECASE | re.DOTALL
+            )
+
         # Remove unwanted chart tag if the user didn't ask for it
         if not any(word in chat_history[-1]["content"].lower() for word in ["plot", "graph", "visualize", "draw", "chart"]):
             sql = re.sub(r"--\s*chart:\s*\w+\s*", "", sql, flags=re.IGNORECASE)
