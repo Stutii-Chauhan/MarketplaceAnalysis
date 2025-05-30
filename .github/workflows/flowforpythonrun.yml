@@ -1,7 +1,6 @@
 name: Notebook Cleaning Flow
 
 on:
-  workflow_dispatch:
   push:
     paths:
       - "CleaningAgent.py"
