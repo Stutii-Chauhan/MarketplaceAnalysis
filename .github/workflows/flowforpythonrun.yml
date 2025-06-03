@@ -1,11 +1,10 @@
 name: Notebook Cleaning Flow
 
 on:
-  push:
-    paths:
-      - "CleaningAgent.py"
-      - "cleaning_bestsellers_men.py"
-      - "cleaning_bestsellers_women.py"
+  workflow_run:
+    workflows: ["Upload to Supabase"]
+    types:
+      - completed
 
 jobs:
   upload:
